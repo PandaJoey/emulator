@@ -1,4 +1,5 @@
 # include <stdio.h>
+# include <stdlib.h>
 # include <stdint.h>
 
 typedef struct {
@@ -14,17 +15,28 @@ typedef struct {
   uint16_t SP;
 } cpu_register;
 
-int add(uint8_t x, uint8_t y);
+void ADD(uint8_t x);
+void LD(uint8_t *toregister, uint8_t *fromregister);
 
-int add(uint8_t x, uint8_t y) {
-  return x+y;
+uint8_t *memory;
+int memorysize = 0xFFFF;
+
+cpu_register cpuRegister;
+
+
+void LD(uint8_t *toregister, uint8_t *fromregister){
+  toregister = fromregister;
+}
+
+void ADD(uint8_t x) {
+  cpuRegister.A += x;
 }
 
 int main() {
-  cpu_register cpuRegister;
-  cpuRegister.A = 3;
-  cpuRegister.B = 2;
-  int result = add(cpuRegister.A, cpuRegister.B);
+  memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
+  cpuRegister.A = 200;
+  cpuRegister.B = 111;
+  uint8_t result = LD((*cpuRegister).A, (*cpuRegister).B);
   printf("%d", result);
   return 0;
 }
