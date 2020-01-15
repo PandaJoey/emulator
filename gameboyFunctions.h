@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <math.h>
+
+typedef struct {
+  uint8_t A;
+  uint8_t B;
+  uint8_t C;
+  uint8_t D;
+  uint8_t E;
+  uint8_t F;
+  uint8_t H;
+  uint8_t L;
+  uint16_t PC;
+  uint16_t SP;
+} cpu_register;
+
+uint8_t *memory;
+int memorysize = 0xFFFF;
+
+
+/* Needs to add the contents of a register to A and also make a call
+   to FLAGREGISTER in this case Z sets if the result is 0 otherwise reset,
+   H sets if there is a carry from bit 3 otherwise reset,
+   N resets and CY is set if there is a carry from bit 7 otherwise reset.
+*/
+void ADD(uint8_t x);
+
+/* Needs to subtract from the contents of register a and restores it back into A
+   Needs to make a call to FLAGREGISTER, Z sets if result is 0 otherwise reset,
+   H sets if there is a borrow from bit 4 otherwise resets, N is set and
+   CY is set if there is a borrorw otherwise reset
+*/
+void SUB(uint8_t x);
+
+/* Needs to be able to add the contents of multiple registers to 
+   register A eg you can add CD, HL and CY to what is in A already.
+*/
+void ADC(cpu_register A, uint8_t x);
+
+// Same as above by taking away
+void SBC(cpu_register A, uint8_t x);
+
+/* Needs to be able to take in single register data, paired register
+   data, internal ram values 8 bit and 16 bit, has to be able to increment
+   or decrement, needs to turn internal ram into hex.
+*/
+void LD(uint8_t *toRegister, uint8_t *fromRegister);
+
+/* Needs to push the contents of a register pair onto the stack
+   the first 1 is subtraced from SP and the contents of the higher
+   portion of the pair are placed on the stack, then the lower portion
+   then SP must be decremented by 2.
+*/
+void PUSH(uint8_t register, cpu_register SP);
+
+/* Needs to pop the contents of the memory stack into a register pair
+   Then increments SP by 1 and then,
+   Needs to load the lower portion of the stack into the register pair, 
+   then needs to load the upper portion of the stack into the register pair
+   Then sp needs to be incremented again.
+*/
+void POP(uint8_t register, cpu_register SP);
+
+/* Needs to set Z to 1 when the result of an operation is 0; otherwise reset
+   Needs to set N to 1 following execution of the substruction instruction, 
+   regardless of the result
+   Needs to set H to 1 when an operation results in carrying from or borrowing 
+   to bit 3
+   Needs to set CY to 1 when an operation results in carry from or borrowing 
+   to bit 7
+*/
+void FLAGREGISTER(uint8_t  Z, uint8_t  N, uint8_t  H, uint8_t  CY);
+
+/* Used to add the 8 bit operand e to SP, e goes from -128 to +127
+   has to make a call to the FLAGREGISTER in each case, Z is reset
+   H is set if there is a carry from bit 11 otherwise is reset,
+   N is reset and CY is set if there is a carry from bit 15
+*/
+void LDHL(cpu_register SP, double exp(double e));
+
+/* Needs to compare the logical and for each bit of A and the value and
+   store this result in A, not sure if it has to logically be correct or not.
+*/
+void AND(cpu_register A, uint8_t x);
+
+// Same as above by for OR
+void OR(cpu_register A, uint8_t x);
+
+// Same as above but for XOR
+void XOR(cpu_register A, uint8_t x);
+
+// Used to compare the contents of A with the value x sets flag if they are equal
+void CP(cpu_register A, uint8_t x);
+
+/* Increments the contents of a register by 1 not sure if it should take a
+   cpu_register too, can also increment by a register value too  
+*/
+void INC(uint8_t x);
+
+/* Used to Decrement the contents of a register by 1
+   Can also decrement a register by a register value
+*/
+void DEC(uint8_t x);
+
