@@ -1,3 +1,9 @@
+/* I am wondering if we need to turn some of these functions into structs as 
+   a lot of them take in the same paramenters, if this is even possible. 
+   something to look into.
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -16,9 +22,22 @@ typedef struct {
   uint16_t SP;
 } cpu_register;
 
+/* dont think this is right just put it here as a representation for 
+*/
+typedef struct {
+  uint16_t AF;
+  uint16_t BC;
+  uint16_t DE;
+  uint16_t HL;
+} cpu_register_pairs;
+
 uint8_t *memory;
 int memorysize = 0xFFFF;
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+// Mathamatical functions
 
 /* Needs to add the contents of a register to A and also make a call
    to FLAGREGISTER in this case Z sets if the result is 0 otherwise reset,
@@ -80,6 +99,23 @@ void FLAGREGISTER(uint8_t  Z, uint8_t  N, uint8_t  H, uint8_t  CY);
 */
 void LDHL(cpu_register SP, double exp(double e));
 
+/* Increments the contents of a register by 1 not sure if it should take a
+   cpu_register too, can also increment by a register value too  
+*/
+void INC(uint8_t x);
+
+/* Used to Decrement the contents of a register by 1
+   Can also decrement a register by a register value
+*/
+void DEC(uint8_t x);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+// Logical Operators
+
+
 /* Needs to compare the logical and for each bit of A and the value and
    store this result in A, not sure if it has to logically be correct or not.
 */
@@ -94,13 +130,79 @@ void XOR(cpu_register A, uint8_t x);
 // Used to compare the contents of A with the value x sets flag if they are equal
 void CP(cpu_register A, uint8_t x);
 
-/* Increments the contents of a register by 1 not sure if it should take a
-   cpu_register too, can also increment by a register value too  
-*/
-void INC(uint8_t x);
 
-/* Used to Decrement the contents of a register by 1
-   Can also decrement a register by a register value
-*/
-void DEC(uint8_t x);
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+// Rotate shift instructions 
+
+/* Used to rotate components of register A to the left, eg bit 0 is copies to 
+   bit 1 and so on, contents of bit 7 are placed in CY and bit 0 of register A. 
+   
+   My thinking here is we need to take in register a and then place 
+   the remained in F.CY, could be the wrong way to do it
+*/
+void RLCA(cpu_register A, cpu_register F);
+
+/* Rotates the contents of register A to the left, seems to be used if CY=1 in
+   the example so i guess you use this in that case.
+*/
+void RLA(cpu_register A, cpu_register F);
+
+/* Same as RLCA but to the right
+*/
+void RRCA(cpu_register A, cpu_register F);
+
+/* Same as RLA but to the right
+*/
+void RRA(cpu_register A, cpu_register F);
+
+/* Rotates the input of a register and/or register pair to the left, stores
+   the rotation from the final bit in CY and back in the register, i guess?
+*/
+void RLC(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Same as above but if CY is 1
+*/
+void RL(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Same as RLC but for right movement
+*/
+void RRC(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Same as RL but for right movement, not sure if these right or left
+   only ones need the F register.
+*/
+void RR(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Shifts the contents of the operand to the left, contents of bit 0
+   are copied to bit 1 and bit one to bit 1, bit 7 is copied to CY and bit 
+   0 is reset
+*/
+void SLA(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Shifts the contents a register to the right of bit 7 to the right 
+   to bit 6 and so on, bit 0 is copied to CY and bit 7 remaines unchanged
+*/
+void SRA(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Shifts the contents of a register to the right same as above, but bit
+   7 is reset instead of unchanged.
+*/
+void SRL(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+
+/* Swaps the contents of bits 0-3 with 4-7 
+*/
+void SWAP(uint8_t aRegister, uint16_t aRegisterPair);
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// Bit Operators
+
+/* Copies the complement of contents of a specified bit in a register to the Z
+   Flag of the program status word (PSW), i think the compliment is just a bit
+   that represents the memory, not sure what arguments this should take.
+*/
+void BIT(uint8_t aRegister);

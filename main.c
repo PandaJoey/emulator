@@ -45,7 +45,7 @@ int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
   cpuRegister.A = 200;
   cpuRegister.B = 111;
-  uint8_t result = LD((*cpuRegister).A, (*cpuRegister).B);
-  printf("%d", result);
+ // uint8_t result = LD((*cpuRegister).A, (*cpuRegister).B);
+ // printf("%d", result);
   return 0;
 }
