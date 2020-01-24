@@ -2,21 +2,24 @@
 # include <stdlib.h>
 # include <stdint.h>
 
+typedef uint8_t register8;
+typedef uint16_t register16;
+
 typedef struct {
-  uint8_t A;
-  uint8_t B;
-  uint8_t C;
-  uint8_t D;
-  uint8_t E;
-  uint8_t F;
-  uint8_t H;
-  uint8_t L;
-  uint16_t PC;
-  uint16_t SP;
+  register8 A;
+  register8 B;
+  register8 C;
+  register8 D;
+  register8 E;
+  register8 F;
+  register8 H;
+  register8 L;
+  register16 PC;
+  register16 SP;
 } cpu_register;
 
 void ADD(uint8_t x);
-void LD(uint8_t *toregister, uint8_t *fromregister);
+void LD(register8 toregister, register8 fromregister);
 
 uint8_t *memory;
 int memorysize = 0xFFFF;
@@ -24,8 +27,8 @@ int memorysize = 0xFFFF;
 cpu_register cpuRegister;
 
 
-void LD(uint8_t *toregister, uint8_t *fromregister){
-  toregister = fromregister;
+void LD(register8 *toregister, register8 *fromregister){
+  toregister = &fromregister;
 }
 
 void ADD(uint8_t x) {
@@ -35,8 +38,9 @@ void ADD(uint8_t x) {
 int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
   cpuRegister.A = 200;
+  cpuRegister.A++;
   cpuRegister.B = 111;
-  uint8_t result = LD((*cpuRegister).A, (*cpuRegister).B);
-  printf("%d", result);
+  LD(cpuRegister.*A cpuRegister.*B);
+  printf("%d", cpuRegister.A);
   return 0;
 }
