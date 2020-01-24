@@ -206,3 +206,51 @@ void SWAP(uint8_t aRegister, uint16_t aRegisterPair);
    that represents the memory, not sure what arguments this should take.
 */
 void BIT(uint8_t aRegister);
+ 
+/* Used to set a specified bit to 1 in a specified register.
+*/
+void SET(int bitToChange, cpu_register aRegisterToChange);
+
+/* Used to reset a specified bit in a specified register
+*/
+void RES(int bitToChange, cpu_register aRegisterToChange);
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// Jump Instructions
+
+/* used to load the operand nn to the PC, nn specifies the address of the subsequently 
+   executed instruction. the lower order byte is placed into byte 2 of the object code
+   and the higher order byte is placed into byte 3.
+
+   not sure what this needs to take but it feels like a pointer to denote nn and then 
+   the register it points to. this is probably wrong, seems more complex in the book
+*/
+void JP(uint8_t *pointerToAddress, cpu_register F);
+
+/* Used to jump an amount of steps between -127 and +129 from the current address. 
+   eg if cc and the flag status do not match the instruction following the current JP will be executed.
+*/
+void JR(uint8_t *pointedToAddress, uint8_t *pointToJumpTo, cpu_register F);
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// Call and Return Functions.
+
+/* In Memory, pushes the PC value corresponding to the instruction at the address following that of the CALL
+   instuction to the 2 bytes following the byte specified by the current SP, operand nn is then loaded into the PC
+   
+   The subroutine is placed after the location specified by the new PC value. When the SR 
+   finishes control is returned to the SP using a return instrcution and by popping the start
+   address of the next instruction which was just pushed and moving it to PC.
+
+   With the push the current value of SP is decremented by 1 and the HOB of the PC is loaded 
+   into the memory address specified by SP and then SP is decremented again.
+*/
+
+void CALL(uint8_t *pointerToAddress, cpu_register SP, cpu_register PC);
+
+
+
