@@ -1,4 +1,14 @@
-/* I am wondering if we need to turn some of these functions into structs as 
+/* Everything in this document is just how im thinking about how it might
+   work, if you disagree or think im taking the wrong approch please tell
+   me so we can move forward together faster on the same mind set and thinking.
+   EG some of the fucntion parameters might be total bullshit but its just how im
+   thinking what is required looked at the book.
+
+   There is a lot to read here, but i think it is laid out nicely so its easy 
+   to understand. I was going to split the file off into subsections but for 
+   now i think its just easier to have it all in one file as a reference.
+
+   I am wondering if we need to turn some of these functions into structs as 
    a lot of them take in the same paramenters, if this is even possible. 
    something to look into.
 */
@@ -220,17 +230,19 @@ void RES(int bitToChange, cpu_register aRegisterToChange);
 
 // Jump Instructions
 
-/* used to load the operand nn to the PC, nn specifies the address of the subsequently 
-   executed instruction. the lower order byte is placed into byte 2 of the object code
-   and the higher order byte is placed into byte 3.
+/* Used to load the operand nn to the PC, nn specifies the address of the 
+   subsequently executed instruction. the lower order byte is placed into 
+   byte 2 of the object code and the higher order byte is placed into byte 3.
 
-   not sure what this needs to take but it feels like a pointer to denote nn and then 
-   the register it points to. this is probably wrong, seems more complex in the book
+   not sure what this needs to take but it feels like a pointer to denote nn and 
+   then the register it points to. this is probably wrong, seems more complex 
+   in the book
 */
 void JP(uint8_t *pointerToAddress, cpu_register F);
 
-/* Used to jump an amount of steps between -127 and +129 from the current address. 
-   eg if cc and the flag status do not match the instruction following the current JP will be executed.
+/* Used to jump an amount of steps between -127 and +129 from the current 
+   address. eg if cc and the flag status do not match the instruction 
+   following the current JP will be executed.
 */
 void JR(uint8_t *pointedToAddress, uint8_t *pointToJumpTo, cpu_register F);
 
@@ -239,18 +251,91 @@ void JR(uint8_t *pointedToAddress, uint8_t *pointToJumpTo, cpu_register F);
 
 // Call and Return Functions.
 
-/* In Memory, pushes the PC value corresponding to the instruction at the address following that of the CALL
-   instuction to the 2 bytes following the byte specified by the current SP, operand nn is then loaded into the PC
-   
-   The subroutine is placed after the location specified by the new PC value. When the SR 
-   finishes control is returned to the SP using a return instrcution and by popping the start
-   address of the next instruction which was just pushed and moving it to PC.
+/* In Memory, pushes the PC value corresponding to the instruction at the address 
+   following that of the CALL instuction to the 2 bytes following the byte 
+   specified by the current SP, operand nn is then loaded into the PC
+  
+   The subroutine is placed after the location specified by the new PC value. 
+   When the SR finishes control is returned to the SP using a return instrcution 
+   and by popping the start address of the next instruction which was just 
+   pushed and moving it to PC.
 
-   With the push the current value of SP is decremented by 1 and the HOB of the PC is loaded 
-   into the memory address specified by SP and then SP is decremented again.
+   With the push the current value of SP is decremented by 1 and the HOB of 
+   the PC is loaded into the memory address specified by SP and then SP is 
+   decremented again.
+
+   There is also a version where you put in a conditional and it if matches 
+   the flag in the F register you can then do the call command so if CC is 
+   true then do nn, needs to make a call to the RET function at somepoint.
 */
 
 void CALL(uint8_t *pointerToAddress, cpu_register SP, cpu_register PC);
 
+/* Pops from the memory stack the PC value that was pushed when CALL is called, 
+   returning control to the SP. needs to increment the sp by 2 to get it back 
+   to the top of the stack. like above can have a condition if true thing
+*/
+void RET(cpu_register PC, cpu_register SP);
 
+/* Used when an interupt-service routine finishes, executed as follows.
+   the address for the return from the interupt is loaded into the PC
+   the master interrupt enable flag is returned to its pre-interupt status.
+   so it pops the stack then gets interupted.
+*/
+void RETI(cpu_register PC, cpu_register SP /*someinterupt.*/);
 
+/* Pushes the current value of the PC to the memory stack and loads the  
+   page 0 memory addresses provided by some operand t. Then the next
+   instuction is fetched from the addess specified by the new content of PC 
+
+   same steps as before with the poping and pushing.
+
+   the RST instruction canbe used to jump from 1 of 8 addresses though.
+   need to check the book for these references, dont want to write them here.
+*/
+void RST(cpu_register PC, cpu_register SP);
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// General Purpose Arithmetic Operations and CPU Control Instructions
+
+/* Stands for decimal Adjust Acc, this is a fucntion that seems to be used
+   after ADD, ADC, SUB,SBC instuctions, binary coded decimal representation
+   is used to set the contents of register A to a BCD eg:
+   ADD A, B; A <- 0x7D, N <- 0
+   DAA     ; A <- 0x7D, 0X06 (0X83), CY <- 0
+   SUB A, B; A <- 0x83 - 0X38 (0X4B) N <- 1
+   DAA     ; A <- 0x4B + 0xFA (0x45)
+*/
+void DAA(cpu_register A, cpu_register aRegister);
+
+/* Takes the ones Compliment of the contents of register A,
+   if like me you forgot what that is its the inverted binary
+   number where you invert each bit so 1 is 0 and 0 is 1.
+*/
+void CPL(cpu_register A);
+
+/* Only advnaces the program counter by 1 has no other operations that have
+   an effect.
+*/
+void NOP(cpu_register PC);
+
+/* After a HALT is executed, the system clock is stopped and HALT mode is 
+   enabled, even when halted the LCD will still work. Also the status of 
+   internal ram register ports remains unchanged.
+
+   HALT can be canceled by an interupt or reset signal.
+
+   the PC is halted at the step after the HALT, if both the interupt
+   request flag and the corrosponding interupt enable flag are set
+   HALT can be exited. or you can use a master interupt
+*/
+void HALT();
+
+/* STOP instructions stops both system clock and oscillator circuits, 
+   STOP is entered and the LCD is also stopped. the internal RAM is unchangd.
+   before entering stop you must make sure all interupt-enable(IE) flags are reset
+   all input to p10-p13 is LOW for all
+*/
+void STOP();
