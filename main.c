@@ -72,6 +72,32 @@ void SUB(uint8_t x) {
   cpuRegister.A -= x;
 }
 
+void RLCA(cpu_register A, cpu_register F) {
+    cpuRegister.A <<= 1;
+    // correct?? check docs
+}
+
+// RLA goes here
+
+void RRCA(cpu_register A, cpu_register F) {
+    cpuRegister.A >>= 1;
+    // correct? check docs
+}
+
+// RRA goes here
+
+void AND(cpu_register A, uint8_t x) {
+    cpuRegister.A &= x;
+}
+
+void OR(cpu_register A, uint8_t x) {
+    cpuRegister.A |= x;
+}
+
+void XOR(cpu_register A, uint8_t x) {
+    cpuRegister.A ^= x;
+}
+
 int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
   cpuRegister.A = 200;
