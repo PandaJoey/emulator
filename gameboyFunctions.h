@@ -19,17 +19,20 @@
 #include <stdint.h>
 #include <math.h>
 
+typedef uint8_t register8_t;
+typedef uint8_t register16_t;
+
 typedef struct {
-  uint8_t A;
-  uint8_t B;
-  uint8_t C;
-  uint8_t D;
-  uint8_t E;
-  uint8_t F;
-  uint8_t H;
-  uint8_t L;
-  uint16_t PC;
-  uint16_t SP;
+  register8_t A;
+  register8_t B;
+  register8_t C;
+  register8_t D;
+  register8_t E;
+  register8_t F;
+  register8_t H;
+  register8_t L;
+  register16_t PC;
+  register16_t SP;
 } cpu_register;
 
 /* dont think this is right just put it here as a representation for 
@@ -39,13 +42,20 @@ typedef struct {
   uint16_t BC;
   uint16_t DE;
   uint16_t HL;
-} cpu_register_pairs;
+} cpu_register_pairs;	 
 
 uint8_t *memory;
 int memorysize = 0xFFFF;
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
+
+// Get register pairs
+
+uint16_t get_AF();
+uint16_t get_BC();
+uint16_t get_DE();
+uint16_t get_HL();
 
 // Mathamatical functions
 
