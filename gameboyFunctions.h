@@ -85,7 +85,7 @@ void SBC(cpu_register A, uint8_t x);
    data, internal ram values 8 bit and 16 bit, has to be able to increment
    or decrement, needs to turn internal ram into hex.
 */
-void LD(uint8_t *toRegister, uint8_t *fromRegister);
+void LD(register8_t *toRegister, register8_t *fromRegister);
 
 /* Needs to push the contents of a register pair onto the stack
    the first 1 is subtraced from SP and the contents of the higher

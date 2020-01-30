@@ -5,19 +5,20 @@
 
 cpu_register cpuRegister;
 
+
 // Left shift first register 8 bits and adds second register
-uint16_t get_AF() { return (cpuRegister.A <<= 8) + cpuRegister.F; }
-uint16_t get_BC() { return (cpuRegister.B <<= 8) + cpuRegister.C; }
-uint16_t get_DE() { return (cpuRegister.D <<= 8) + cpuRegister.E; }
-uint16_t get_HL() { return (cpuRegister.H <<= 8) + cpuRegister.L; }
+uint16_t get_AF() { return (cpuRegister.A << 8) + cpuRegister.F; }
+uint16_t get_BC() { return (cpuRegister.B << 8) + cpuRegister.C; }
+uint16_t get_DE() { return (cpuRegister.D << 8) + cpuRegister.E; }
+uint16_t get_HL() { return (cpuRegister.H << 8) + cpuRegister.L; }
 
 /* this function needs to not only load data from one register to another
    but also load data from register pairs and possibly register ranges
    and example in the book shows a memory location + a register to show a
    register range, this is more complex fucntion than we first thought.
 */ 
-void LD(register8 *toregister, register8 *fromregister){
-  toregister = &fromregister;
+void LD(register8_t *toregister, register8_t *fromregister){
+  toregister = &fromregister; 
 }
 
 void ADD(uint8_t x) {
@@ -56,5 +57,8 @@ void XOR(cpu_register A, uint8_t x) {
 
 int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
+  cpuRegister.A = 5;
+  cpuRegister.F = 10;
+  printf("%d", get_AF());
   return 0;
 }
