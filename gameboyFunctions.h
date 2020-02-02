@@ -163,20 +163,20 @@ void CP(cpu_register A, uint8_t x);
    My thinking here is we need to take in register a and then place 
    the remained in F.CY, could be the wrong way to do it
 */
-void RLCA(cpu_register A, cpu_register F);
+void RLCA(register8_t A, register8_t F);
 
 /* Rotates the contents of register A to the left, seems to be used if CY=1 in
    the example so i guess you use this in that case.
 */
-void RLA(cpu_register A, cpu_register F);
+void RLA(register8_t A, register8_t F);
 
 /* Same as RLCA but to the right
 */
-void RRCA(cpu_register A, cpu_register F);
+void RRCA(register8_t A, register8_t F);
 
 /* Same as RLA but to the right
 */
-void RRA(cpu_register A, cpu_register F);
+void RRA(register8_t A, register8_t F);
 
 /* Rotates the input of a register and/or register pair to the left, stores
    the rotation from the final bit in CY and back in the register, i guess?
