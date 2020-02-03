@@ -56,27 +56,38 @@ void SUB(uint8_t x) {
 */
 void RLCA(register8_t A, register8_t F) {
     cpuRegister.A <<= 1;
-    printf("value of A after first rotation %d\n\n ", cpuRegister.A);
+    printf("value of A after first rotation %d\n ", cpuRegister.A);
+    printf("value of A after first rotation 0x%x\n\n ", cpuRegister.A);
+   
     
     if(cpuRegister.A == 254){
-      printf("Value of F before adding %d\n\n ", cpuRegister.F);
+      printf("Value of F before adding %d \n", cpuRegister.F);
+      printf("Value of F before adding 0x%x\n\n ", cpuRegister.F);
       cpuRegister.F = 128;
-      printf("Value of F after adding %d\n\n ", cpuRegister.F);
+      printf("Value of F after adding %d\n ", cpuRegister.F);
+      printf("Value of F after adding 0x%x\n\n ", cpuRegister.F);
       cpuRegister.A = cpuRegister.F - 1;
-      printf("the value of A before rotation %d \n\n", cpuRegister.A);
+      printf("the value of A before rotation %d  \n", cpuRegister.A);
+      printf("Value of A before rotating 0x%x\n\n ", cpuRegister.A);
      // cpuRegister.A <<= 1;
-      printf("the value of A after rotation %d \n\n", cpuRegister.A);
+      printf("the value of A after rotation %d  \n", cpuRegister.A);
+      printf("the value of A after rotation 0x%x\n\n ", cpuRegister.A);
     }else if(cpuRegister.A == 128){
-      printf("Value of F before adding %d\n\n ", cpuRegister.F);
+      printf("Value of F before adding %d  \n", cpuRegister.F);
+      printf("Value of F before adding 0x%x\n\n ", cpuRegister.F);
       cpuRegister.F = 128;
-      printf("Value of F after adding %d\n\n ", cpuRegister.F);
+      printf("Value of F after adding %d  \n", cpuRegister.F);
+        printf("Value of F after adding 0x%x\n\n ", cpuRegister.F);
       cpuRegister.A = cpuRegister.F + 1;
-     printf("the value of A before rotation %d \n\n", cpuRegister.A);
+     printf("the value of A before rotation %d \n", cpuRegister.A);
+     printf("the value of A before rotation 0x%x \n\n", cpuRegister.A);
      // cpuRegister.A <<= 1;
-      printf("the value of A after rotation %d \n\n", cpuRegister.A);
+      printf("the value of A after rotation %d  \n", cpuRegister.A);
+      printf("the value of A after rotation 0x%x \n\n", cpuRegister.A);
     }else if(cpuRegister.A & (1 << 7)) {
       cpuRegister.A += 1;
-      printf("value of A after first rotation %d\n\n ", cpuRegister.A);
+      printf("value of A after first rotation %d  \n", cpuRegister.A);
+      printf("value of A after first rotation 0x%x\n\n ", cpuRegister.A);
     }
 
 
@@ -137,11 +148,11 @@ void XOR(cpu_register A, uint8_t x) {
 
 int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
-  cpuRegister.A = 111;
+  cpuRegister.A = 22;
   cpuRegister.F = 0;
-  printf("value of A after RLCA %d\n", cpuRegister.A);
-  printf("value of F after RLCA %d\n", cpuRegister.F);
-  printf("First Print Value %d\n", get_AF());
+  printf("value of A before RLCA %d\n", cpuRegister.A);
+  printf("value of F before RLCA %d\n", cpuRegister.F);
+  printf("First Print Value %d\n\n\n", get_AF());
   RLCA(cpuRegister.A, cpuRegister.F);
   printf("value of A after RLCA %d\n", cpuRegister.A);
   printf("value of F after RLCA %d\n", cpuRegister.F);
