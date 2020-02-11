@@ -57,6 +57,18 @@ uint16_t get_BC();
 uint16_t get_DE();
 uint16_t get_HL();
 
+// Flag functions
+
+void set_CY(int x);
+void set_Z(int x);
+void set_H(int x);
+void set_N(int x);
+
+int get_CY();
+int get_Z();
+int get_H();
+int get_N();
+
 // Mathamatical functions
 
 /* Needs to add the contents of a register to A and also make a call
