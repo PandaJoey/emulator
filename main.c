@@ -13,33 +13,33 @@ uint16_t get_BC() { return (cpuRegister.B << 8) + cpuRegister.C; }
 uint16_t get_DE() { return (cpuRegister.D << 8) + cpuRegister.E; }
 uint16_t get_HL() { return (cpuRegister.H << 8) + cpuRegister.L; }
 
+// Getters for flag registers
+int get_CY() { return (cpuRegister.F >> 4) & 1; }
+int get_H() { return (cpuRegister.F >> 5) & 1; }
+int get_N() { return (cpuRegister.F >> 6) & 1; }
+int get_Z() { return (cpuRegister.F >> 7) & 1; }
+
+// Setters for flag registers
 void set_CY(int x) {
   if (x == 1) { cpuRegister.F |= 16; } 
   else { cpuRegister.F &= ~(16); }
 }
-
-int get_CY() { return (cpuRegister.F >> 4) & 1; }
 
 void set_H(int x) {
   if (x == 1) { cpuRegister.F |= 32; } 
   else { cpuRegister.F &= ~(32); }
 }
 
-int get_H() { return (cpuRegister.F >> 5) & 1; }
-
 void set_N(int x) {
   if (x == 1) { cpuRegister.F |= 64; } 
   else { cpuRegister.F &= ~(64); }
 }
-
-int get_N() { return (cpuRegister.F >> 6) & 1; }
 
 void set_Z(int x) {
   if (x == 1) { cpuRegister.F |= 128; } 
   else { cpuRegister.F &= ~(128); }
 }
 
-int get_Z() { return (cpuRegister.F >> 7) & 1; }
 
 /* this function needs to not only load data from one register to another
    but also load data from register pairs and possibly register ranges
@@ -82,7 +82,7 @@ void SUB(uint8_t x) {
 
   but its a good start.
 */
-void RLCA(register8_t A, register8_t F) {
+void RLCA() {
     // Check for a carry from bit 7, set CY accordingly
     set_CY((cpuRegister.A >> 7) & 1);
     // Bitshift left by 1 and add bit 7 (old bit 6)
@@ -90,6 +90,7 @@ void RLCA(register8_t A, register8_t F) {
 }
 
 // RLA goes here
+//TODO is this done? check and update params
 void RLA(register8_t A, register8_t F) {
     if(CHECK_BIT(cpuRegister.F, cpuRegister.F-1 )) {
       cpuRegister.A <<= 1;
@@ -97,31 +98,30 @@ void RLA(register8_t A, register8_t F) {
 
 }
 
-void RRCA(register8_t A, register8_t F) {
+void RRCA() {
     cpuRegister.A <<= 1;
     cpuRegister.F <<= 1;
 }
 
-// RRA goes here
-void RRA(register8_t A, register8_t F) {
+void RRA() {
     cpuRegister.A <<= 1;
     cpuRegister.F <<= 1;
 }
 
-void AND(cpu_register A, uint8_t x) {
+void AND(uint8_t x) {
     cpuRegister.A &= x;
 }
 
-void OR(cpu_register A, uint8_t x) {
+void OR(uint8_t x) {
     cpuRegister.A |= x;
 }
 
-void XOR(cpu_register A, uint8_t x) {
+void XOR(uint8_t x) {
     cpuRegister.A ^= x;
 }
 
 
-int main() {
+int main() 
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
   cpuRegister.A = 63;
   cpuRegister.F = 0;

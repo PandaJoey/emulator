@@ -151,16 +151,16 @@ void DEC(uint8_t x);
 /* Needs to compare the logical and for each bit of A and the value and
    store this result in A, not sure if it has to logically be correct or not.
 */
-void AND(cpu_register A, uint8_t x);
+void AND(uint8_t x);
 
 // Same as above by for OR
-void OR(cpu_register A, uint8_t x);
+void OR(uint8_t x);
 
 // Same as above but for XOR
-void XOR(cpu_register A, uint8_t x);
+void XOR(uint8_t x);
 
 // Used to compare the contents of A with the value x sets flag if they are equal
-void CP(cpu_register A, uint8_t x);
+void CP(uint8_t x);
 
 
 
@@ -175,7 +175,7 @@ void CP(cpu_register A, uint8_t x);
    My thinking here is we need to take in register a and then place 
    the remained in F.CY, could be the wrong way to do it
 */
-void RLCA(register8_t A, register8_t F);
+void RLCA();
 
 /* Rotates the contents of register A to the left, seems to be used if CY=1 in
    the example so i guess you use this in that case.
@@ -184,11 +184,11 @@ void RLA(register8_t A, register8_t F);
 
 /* Same as RLCA but to the right
 */
-void RRCA(register8_t A, register8_t F);
+void RRCA();
 
 /* Same as RLA but to the right
 */
-void RRA(register8_t A, register8_t F);
+void RRA();
 
 /* Rotates the input of a register and/or register pair to the left, stores
    the rotation from the final bit in CY and back in the register, i guess?
