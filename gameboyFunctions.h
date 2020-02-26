@@ -180,7 +180,7 @@ void RLCA();
 /* Rotates the contents of register A to the left, seems to be used if CY=1 in
    the example so i guess you use this in that case.
 */
-void RLA(register8_t A, register8_t F);
+void RLA();
 
 /* Same as RLCA but to the right
 */
