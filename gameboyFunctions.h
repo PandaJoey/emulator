@@ -1,4 +1,4 @@
-/* Everything in this document is just how im thinking about how it might
+s/* Everything in this document is just how im thinking about how it might
    work, if you disagree or think im taking the wrong approch please tell
    me so we can move forward together faster on the same mind set and thinking.
    EG some of the fucntion parameters might be total bullshit but its just how im
@@ -71,33 +71,118 @@ int get_N();
 
 // Mathamatical functions
 
-/* Needs to add the contents of a register to A and also make a call
-   to FLAGREGISTER in this case Z sets if the result is 0 otherwise reset,
-   H sets if there is a carry from bit 3 otherwise reset,
-   N resets and CY is set if there is a carry from bit 7 otherwise reset.
+/* Based on opcodes:
+   Adds A = A + s, s is any 8 bit source register or memory location s= r || n || HL.
+   Takes 4 clocks to process an r, any 8 bit register
+   Takes 8 clocks to process an n, any 8 bit binary number
+   Takes 8 clocks to process a any register pair or 16 bit register.
+   Z set if the result of the operation is 0 other wise is reset. 
+   H set if there is a carry from bit 3 otherwise reset. 
+   N is always reset.
+   CY is set if there is a carry form bit 7 otherwise reset.
+
 */
 void ADD(uint8_t x);
 
-/* Needs to subtract from the contents of register a and restores it back into A
-   Needs to make a call to FLAGREGISTER, Z sets if result is 0 otherwise reset,
-   H sets if there is a borrow from bit 4 otherwise resets, N is set and
-   CY is set if there is a borrorw otherwise reset
-*/
-void SUB(uint8_t x);
+/* Based on opcodes:
+   Adds A = A + s + CY, s is any 8 bit source register or memory location s = r || n || HL.
+   Takes 4 clocks to process an r, any 8 bit register.
+   Takes 8 clocks to process an n, any 8 bit binary number.
+   Takes 8 clocks to process a any register pair or 16 bit register.
+   Z set if the result of the operation is 0 other wise is reset. 
+   H set if there is a carry from bit 3 otherwise reset. 
+   N is always reset.
+   CY is set if there is a carry form bit 7 otherwise reset.
 
-/* Needs to be able to add the contents of multiple registers to 
-   register A eg you can add CD, HL and CY to what is in A already.
 */
 void ADC(cpu_register A, uint8_t x);
 
-// Same as above by taking away
+/* Based on opcodes:
+   Subtracts A = A - s, s is any 8 bit source register or memory location s = r || n || HL.
+   Takes 4 clocks to process an r, any 8 bit register.
+   Takes 8 clocks to process an n, any 8 bit binary number.
+   Takes 8 clocks to process a any register pair or 16 bit register.
+   Z set if the result of the operation is 0 other wise is reset. 
+   H set if there is a carry from bit 3 otherwise reset. 
+   N is always reset.
+   CY is set if there is a carry form bit 7 otherwise reset.
+
+*/
+void SUB(uint8_t x);
+
+
+
+/* Based on opcodes:
+   Subtracts A = A - s - CY, s is any 8 bit source register or memory location s = r || n || HL.
+   Takes 4 clocks to process an r, any 8 bit register.
+   Takes 8 clocks to process an n, any 8 bit binary number.
+   Takes 8 clocks to process a any register pair or 16 bit register.
+   Z set if the result of the operation is 0 other wise is reset. 
+   H set if there is a carry from bit 3 otherwise reset. 
+   N is always reset.
+   CY is set if there is a carry form bit 7 otherwise reset.
+*/
 void SBC(cpu_register A, uint8_t x);
 
-/* Needs to be able to take in single register data, paired register
-   data, internal ram values 8 bit and 16 bit, has to be able to increment
-   or decrement, needs to turn internal ram into hex.
+/* Based on opcodes:
+   There are 7 basic load commands we need to consider, below i will list them
+   and say what each load needs to do, this does not mean we need 7 load functons
+  
+   1)LD r,s: loads s into r where r is any 8 bit register and s is any 8 bit source
+     register or memory location s = r || n || HL.
+   
+   2)LD d,r: loads r into d where d is any 8 bit destination register or memory location
+     and r is any 8 bit register d = r || HL
+   
+   3)LD d,n: loads n into d where n is any 8 bit binary number and d is any destination register
+     or memory location d = r || HL
+   
+   4)LD A(ss): loads (ss) into A where ss is any 16 bit source register or memory location
+     ss = BC || DE || HL || nn
+
+   5)LD (dd),A: loads A into dd where dd is any 16 bit destination registery or memory location
+     dd = BC || DE || HL || nn
+
+   6)LD A, (C): A <-($FF00+C) loads a memory location + CY into register A were CY is the 
+    carry flag
+
+   7)LD (C), A: ($FF00+C) <- A loads A into the carry flag memory location.
+   
+   Takes 4 clocks to process an r, any 8 bit register.
+   Takes 8 clocks to process an n, any 8 bit binary number.
+   Takes 8 clocks to process a any register pair or 16 bit register.
+   Takes 12 clocks to process any register pair if the LD d,n function is used.
 */
 void LD(register8_t *toRegister, register8_t *fromRegister);
+
+/* Based on opcodes:
+   Loads and decrements whatever is called a the same time.
+   1)LDD A, (HL): A <- (HL) || HL <- HL - 1 think this means loads any 2 bit regiser into A
+   then decrements it by 1 or lodas HL into HL -1 into A.
+
+   2)LDD (HL), A: (HL) <- A || HL <- HL - 1 think this means loads A into any 2 bit register
+   then decrements it by 1 or loads HL into HL -1 into HL.
+*/
+void LDD();
+
+/* Based on opcodes:
+   Loads and increments whatever is called a the same time.
+   1)LDI A, (HL): A <- (HL) || HL <- HL + 1 think this means loads any 2 bit regiser into A
+   then increments it by 1 or lodas HL into HL -1 into A.
+
+   2)LDI (HL), A: (HL) <- A || HL <- HL + 1 think this means loads A into any 2 bit register
+   then decrements it by 1 or loads HL into HL -1 into HL.
+*/
+void LDI();
+
+
+/* Based on opcodes:
+   Loads A into the address $ff00+n or loads the address into A
+   1)LDH(n),A: ($FF00+n) <- A
+   2)LDH A,(n): A <- ($FF00+n)
+
+*/
+void LDH();
 
 /* Needs to push the contents of a register pair onto the stack
    the first 1 is subtraced from SP and the contents of the higher
@@ -224,7 +309,9 @@ void SRA(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
 */
 void SRL(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
 
-/* Swaps the contents of bits 0-3 with 4-7 
+/* Based on opcodes:
+   SWAP s: Swaps the contents of bits 0-3 with 4-7, swaps nibbles. where
+   s = r || HL where s is any 8 bit source register or memory locaiton.
 */
 void SWAP(uint8_t aRegister, uint16_t aRegisterPair);
 

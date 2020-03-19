@@ -140,3 +140,25 @@ int main() {
   // printf("Value after RLCA %d\n", get_AF());
   return 0;
 }
+/*
+-	Flag is not affected by this operation.
+*	Flag is affected according to result of operation.
+b	A bit number in any 8-bit register or memory location.
+C	Carry flag.
+cc	Flag condition code: C,NC,NZ,Z
+d	Any 8-bit destination register or memory location.
+dd	Any 16-bit destination register or memory location.
+e	8-bit signed 2's complement displacement.
+f	8 special call locations in page zero.
+H	Half-carry flag.
+N	Subtraction flag.
+NC	Not carry flag
+NZ	Not zero flag.
+n	Any 8-bit binary number.
+nn	Any 16-bit binary number.
+r	Any 8-bit register. (A,B,C,D,E,H, or L)
+s	Any 8-bit source register or memory location.
+sb	A bit in a specific 8-bit register or memory location.
+ss	Any 16-bit source register or memory location.
+Z	Zero Flag.
+*/
