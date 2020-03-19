@@ -1,4 +1,4 @@
-s/* Everything in this document is just how im thinking about how it might
+/* Everything in this document is just how im thinking about how it might
    work, if you disagree or think im taking the wrong approch please tell
    me so we can move forward together faster on the same mind set and thinking.
    EG some of the fucntion parameters might be total bullshit but its just how im
@@ -95,7 +95,7 @@ void ADD(uint8_t x);
    CY is set if there is a carry form bit 7 otherwise reset.
 
 */
-void ADC(cpu_register A, uint8_t x);
+void ADC(uint8_t x);
 
 /* Based on opcodes:
    Subtracts A = A - s, s is any 8 bit source register or memory location s = r || n || HL.

@@ -50,8 +50,39 @@ void set_Z(int x) {
 //   toregister = &fromregister; 
 // }
 
+uint8_t flag_H_calc(uint8_t x, uint8_t y) {
+  x <<= 4;
+  x >>= 4;
+  y <<= 4;
+  y >>= 4;
+  return (x + y) >> 4;
+}
+
 void ADD(uint8_t x) {
+  // Set flag registers
+  set_N(0);
+  set_H(flag_H_calc(cpuRegister.A, x));
+  set_CY((cpuRegister.A + x) >> 8);
   cpuRegister.A += x;
+  if(cpuRegister.A == 0) {
+    set_Z(1);
+  } else {
+    set_Z(0);
+  }
+}
+
+void ADC(uint8_t x) {
+  // Set flag registers
+  set_N(0);
+  set_H(flag_H_calc(cpuRegister.A, (x + get_CY())));
+  int cyValue = (cpuRegister.A + x + get_CY()) >> 8;
+  cpuRegister.A += (x + get_CY());
+  set_CY(cyValue);
+  if(cpuRegister.A == 0) {
+    set_Z(1);
+  } else {
+    set_Z(0);
+  }
 }
 
 void SUB(uint8_t x) {
@@ -118,16 +149,20 @@ void XOR(uint8_t x) {
 
 int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
-  cpuRegister.A = 0x81;
+  cpuRegister.A = 0x80;
   cpuRegister.F = 0;
   printf("value of A before RRCA %x\n", cpuRegister.A);
   printf("value of F before RRCA %x\n", cpuRegister.F);
   printf("First Print Value %d\n\n\n", get_AF());
-  RRA();
+  set_CY(0);
+  ADC(0x80);
   printf("value of A after RRCA %x\n", cpuRegister.A);
   printf("value of F after RRCA %x\n", cpuRegister.F);
   printf("Value of AF Pair after RLCA %d\n", get_AF());
   printf("CY is: %d\n", get_CY());
+  printf("Z is: %d\n", get_Z());
+  printf("N is: %d\n", get_N());
+  printf("H is: %d\n", get_H());
 
   // printf("First Print Value %d\n", get_AF());
   // ADD(5);
