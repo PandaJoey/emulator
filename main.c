@@ -4,6 +4,10 @@
 #include "gameboyFunctions.h"
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
+
+////////////////////////////////////////////////////////////////////
+//Setup
+
 cpu_register cpuRegister;
 
 
@@ -40,12 +44,6 @@ void set_Z(int x) {
   else { cpuRegister.F &= ~(128); }
 }
 
-
-/* this function needs to not only load data from one register to another
-   but also load data from register pairs and possibly register ranges
-   and example in the book shows a memory location + a register to show a
-   register range, this is more complex fucntion than we first thought.
-*/ 
 // void LD(register8_t *toregister, register8_t *fromregister){
 //   toregister = &fromregister; 
 // }
@@ -57,6 +55,9 @@ uint8_t flag_H_calc(uint8_t x, uint8_t y) {
   y >>= 4;
   return (x + y) >> 4;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Arithmetric functions
 
 void ADD(uint8_t x) {
   // Set flag registers
@@ -88,6 +89,11 @@ void ADC(uint8_t x) {
 void SUB(uint8_t x) {
   cpuRegister.A -= x;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Rotation functions
+
 
 void RLCA() {
     // Check for a carry from bit 7, set CY accordingly
@@ -135,6 +141,9 @@ void RRA() {
     cpuRegister.A >>= 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Logical functions
+
 void AND(uint8_t x) {
     cpuRegister.A &= x;
 }
@@ -146,6 +155,9 @@ void OR(uint8_t x) {
 void XOR(uint8_t x) {
     cpuRegister.A ^= x;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Main
 
 int main() {
   memory = (uint8_t *) malloc(memorysize * sizeof(uint8_t));
@@ -175,25 +187,3 @@ int main() {
   // printf("Value after RLCA %d\n", get_AF());
   return 0;
 }
-/*
--	Flag is not affected by this operation.
-*	Flag is affected according to result of operation.
-b	A bit number in any 8-bit register or memory location.
-C	Carry flag.
-cc	Flag condition code: C,NC,NZ,Z
-d	Any 8-bit destination register or memory location.
-dd	Any 16-bit destination register or memory location.
-e	8-bit signed 2's complement displacement.
-f	8 special call locations in page zero.
-H	Half-carry flag.
-N	Subtraction flag.
-NC	Not carry flag
-NZ	Not zero flag.
-n	Any 8-bit binary number.
-nn	Any 16-bit binary number.
-r	Any 8-bit register. (A,B,C,D,E,H, or L)
-s	Any 8-bit source register or memory location.
-sb	A bit in a specific 8-bit register or memory location.
-ss	Any 16-bit source register or memory location.
-Z	Zero Flag.
-*/
