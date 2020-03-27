@@ -417,79 +417,272 @@ void EI();
 
 // Rotate shift instructions 
 
-/* Used to rotate components of register A to the left, eg bit 0 is copies to 
-   bit 1 and so on, contents of bit 7 are placed in CY and bit 0 of register A. 
-   
-   My thinking here is we need to take in register a and then place 
-   the remained in F.CY, could be the wrong way to do it
+/* Based on opcodes:
+   Used to rotate A left, the old bit 7 is placed into the carry flag
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 7 data. 
+   z=0, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RLC         -/-        07     4
 */
 void RLCA();
 
-/* Rotates the contents of register A to the left, seems to be used if CY=1 in
-   the example so i guess you use this in that case.
+/* Based on opcodes:
+   Used to rotate A left through the carry flag, instead of rotating then 
+   setting the carry flag it incorperates the carry flag
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 7 data
+   z=0, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RLC         -/-        17     4
 */
 void RLA();
 
-/* Same as RLCA but to the right
+/* Based on opcodes:
+   Used to rotate A right, the old bit 0 is placed into the carry flag
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 0 data.
+   z=0, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RLC         -/-        0F     4
 */
 void RRCA();
 
-/* Same as RLA but to the right
+/* Based on opcodes:
+   Used to rotate A right through the carry flag, instead of rotating then 
+   setting the carry flag it incorperates the carry flag
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 0 data
+   z=0, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RLC         -/-        1F     4
 */
 void RRA();
 
-/* Rotates the input of a register and/or register pair to the left, stores
-   the rotation from the final bit in CY and back in the register, i guess?
+/* Based on opcodes:
+   Used to rotate s left the old bit 7 is placed into the carry flag, 
+   where s is any 8-bit source register or memory location
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 7 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RLC         A          CB 07  8
+   RLC         B          CB 00  8
+   RLC         C          CB 01  8
+   RLC         D          CB 02  8
+   RLC         E          CB 03  8
+   RLC         H          CB 04  8
+   RLC         L          CB 05  8
+   RLC         (HL)       CB 06  16
 */
-void RLC(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void RLC();
 
-/* Same as above but if CY is 1
+/* Based on opcodes:
+   Used to rotate s left through the carry flaginstead of rotating then 
+   setting the carry flag it incorperates the carry flag, 
+   where s is any 8-bit source register or memory location
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 7 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RL          A          CB 17  8
+   RL          B          CB 10  8
+   RL          C          CB 11  8
+   RL          D          CB 12  8
+   RL          E          CB 13  8
+   RL          H          CB 14  8
+   RL          L          CB 15  8
+   RL          (HL)       CB 16  16
 */
-void RL(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void RL();
 
-/* Same as RLC but for right movement
+/* Based on opcodes:
+   Used to rotate s right the old bit 0 is placed into the carry flag, 
+   where s is any 8-bit source register or memory location
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 0 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RRC         A          CB 0F  8
+   RRC         B          CB 08  8
+   RRC         C          CB 09  8
+   RRC         D          CB 0A  8
+   RRC         E          CB 0B  8
+   RRC         H          CB 0C  8
+   RRC         L          CB 0D  8
+   RRC         (HL)       CB 0E  16
 */
-void RRC(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void RRC();
 
-/* Same as RL but for right movement, not sure if these right or left
-   only ones need the F register.
+/* Based on opcodes:
+   Used to rotate s right through the carry flaginstead of rotating then 
+   setting the carry flag it incorperates the carry flag, 
+   where s is any 8-bit source register or memory location
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 0 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   RR          A          CB 1F  8
+   RR          B          CB 18  8
+   RR          C          CB 19  8
+   RR          D          CB 1A  8
+   RR          E          CB 1B  8
+   RR          H          CB 1C  8
+   RR          L          CB 1D  8
+   RR          (HL)       CB 1E  16
 */
-void RR(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void RR();
 
-/* Shifts the contents of the operand to the left, contents of bit 0
-   are copied to bit 1 and bit one to bit 1, bit 7 is copied to CY and bit 
-   0 is reset
+/* Based on opcodes:
+   Used to shift s left the into the carry FLAG and the LSB of s is set to 0
+   (LSB is the least significant bit.)
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 7 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   SLA         A          CB 27  8
+   SLA         B          CB 20  8
+   SLA         C          CB 21  8
+   SLA         D          CB 22  8
+   SLA         E          CB 23  8
+   SLA         H          CB 24  8
+   SLA         L          CB 25  8
+   SLA         (HL)       CB 26  16
 */
-void SLA(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void SLA();
 
-/* Shifts the contents a register to the right of bit 7 to the right 
-   to bit 6 and so on, bit 0 is copied to CY and bit 7 remaines unchanged
+/* Based on opcodes:
+   Used to shift s right the into the carry FLAG and the MSB does not change
+   (MSB is the most significant bit.)
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 0 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   SRA         A          CB 2F  8
+   SRA         B          CB 28  8
+   SRA         C          CB 29  8
+   SRA         D          CB 2A  8
+   SRA         E          CB 2B  8
+   SRA         H          CB 2C  8
+   SRA         L          CB 2D  8
+   SRA         (HL)       CB 2E  16
 */
-void SRA(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void SRA();
 
-/* Shifts the contents of a register to the right same as above, but bit
-   7 is reset instead of unchanged.
+/* Based on opcodes:
+   Used to shift s right the into the carry FLAG and the MSB is set to 0
+   (MSB is the most significant bit.)
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Contains old bit 0 data.
+   z=*, n=0, h=0, cy=*;
+   Instruction Parameters Opcode Cycles
+   SRA         A          CB 3F  8
+   SRA         B          CB 38  8
+   SRA         C          CB 39  8
+   SRA         D          CB 3A  8
+   SRA         E          CB 3B  8
+   SRA         H          CB 3C  8
+   SRA         L          CB 3D  8
+   SRA         (HL)       CB 3E  16
 */
-void SRL(uint8_t aRegister, uint16_t aRegisterPair, cpu_register F);
+void SRL();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // Bit Operators
 
-/* Copies the complement of contents of a specified bit in a register to the Z
-   Flag of the program status word (PSW), i think the compliment is just a bit
-   that represents the memory, not sure what arguments this should take.
+/* Based on opcodes:
+   Used to test a bit b in any s which is any sorce register or memory location.
+   b = 0 - 7, 
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if bit b of register r is 0.
+   N - Reset.
+   H - Set.
+   C - Not affected.
+   z=*, n=0, h=1, cy=-;
+   Instruction Parameters Opcode Cycles
+   BIT         b,A        CB 47  8
+   BIT         b,B        CB 40  8
+   BIT         b,C        CB 41  8
+   BIT         b,D        CB 42  8
+   BIT         b,E        CB 43  8
+   BIT         b,H        CB 44  8
+   BIT         b,L        CB 45  8
+   BIT         b,(HL)     CB 46  16
 */
-void BIT(uint8_t aRegister);
+void BIT();
  
-/* Used to set a specified bit to 1 in a specified register.
+/* Based on opcodes:
+   Set Bit b in register s 
+   b = 0 - 7, 
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if bit b of register r is 0.
+   N - Reset.
+   H - Set.
+   C - Not affected.
+   z=-, n=-, h=-, cy=-;
+   Instruction Parameters Opcode Cycles
+   SET         b,A        CB C7  8
+   SET         b,B        CB C0  8
+   SET         b,C        CB C1  8
+   SET         b,D        CB C2  8
+   SET         b,E        CB C3  8
+   SET         b,H        CB C4  8
+   SET         b,L        CB C5  8
+   SET         b,(HL)     CB C6  16
 */
-void SET(int bitToChange, cpu_register aRegisterToChange);
+void SET();
 
-/* Used to reset a specified bit in a specified register
+/* Based on opcodes:
+   Reset Bit b in register s 
+   b = 0 - 7, 
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if bit b of register r is 0.
+   N - Reset.
+   H - Set.
+   C - Not affected.
+   z=-, n=-, h=-, cy=-;
+   Instruction Parameters Opcode Cycles
+   RES         b,A        CB 87  8
+   RES         b,B        CB 80  8
+   RES         b,C        CB 81  8
+   RES         b,D        CB 82  8
+   RES         b,E        CB 83  8
+   RES         b,H        CB 84  8
+   RES         b,L        CB 85  8
+   RES         b,(HL)     CB 86  16
 */
-void RES(int bitToChange, cpu_register aRegisterToChange);
+void RES();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -504,13 +697,13 @@ void RES(int bitToChange, cpu_register aRegisterToChange);
    then the register it points to. this is probably wrong, seems more complex 
    in the book
 */
-void JP(uint8_t *pointerToAddress, cpu_register F);
+void JP();
 
 /* Used to jump an amount of steps between -127 and +129 from the current 
    address. eg if cc and the flag status do not match the instruction 
    following the current JP will be executed.
 */
-void JR(uint8_t *pointedToAddress, uint8_t *pointToJumpTo, cpu_register F);
+void JR();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
