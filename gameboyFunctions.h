@@ -4,12 +4,12 @@
    EG some of the fucntion parameters might be total bullshit but its just how im
    thinking what is required looked at the book.
 
-   There is a lot to read here, but i think it is laid out nicely so its easy 
-   to understand. I was going to split the file off into subsections but for 
+   There is a lot to read here, but i think it is laid out nicely so its easy
+   to understand. I was going to split the file off into subsections but for
    now i think its just easier to have it all in one file as a reference.
 
-   I am wondering if we need to turn some of these functions into structs as 
-   a lot of them take in the same paramenters, if this is even possible. 
+   I am wondering if we need to turn some of these functions into structs as
+   a lot of them take in the same paramenters, if this is even possible.
    something to look into.
 */
 
@@ -26,28 +26,28 @@ typedef uint8_t register16_t;
 // eg if we tried to put 1111111 in f it needs to be 11110000
 
 typedef struct {
-  register8_t A;
-  register8_t B;
-  register8_t C;
-  register8_t D;
-  register8_t E;
-  register8_t F;
-  register8_t H;
-  register8_t L;
-  register16_t PC;
-  register16_t SP;
+	register8_t A;
+	register8_t B;
+	register8_t C;
+	register8_t D;
+	register8_t E;
+	register8_t F;
+	register8_t H;
+	register8_t L;
+	register16_t PC;
+	register16_t SP;
 } cpu_register;
 
-/* dont think this is right just put it here as a representation for 
+/* dont think this is right just put it here as a representation for
 */
 typedef struct {
-  uint16_t AF;
-  uint16_t BC;
-  uint16_t DE;
-  uint16_t HL;
-} cpu_register_pairs;	 
+	uint16_t AF;
+	uint16_t BC;
+	uint16_t DE;
+	uint16_t HL;
+} cpu_register_pairs;
 
-uint8_t *memory;
+uint8_t* memory;
 int memorysize = 0xFFFF;
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -80,62 +80,183 @@ int get_N();
 // 8 Bit Load Functions.
 
 /* Based on opcodes:
-   There are 7 basic load commands we need to consider, below i will list them
-   and say what each load needs to do, this does not mean we need 7 load functons
-  
-   1)LD r,s: loads s into r where r is any 8 bit register and s is any 8 bit source
-     register or memory location s = r || n || HL.
-   
-   2)LD d,r: loads r into d where d is any 8 bit destination register or memory location
-     and r is any 8 bit register d = r || HL
-   
-   3)LD d,n: loads n into d where n is any 8 bit binary number and d is any destination register
-     or memory location d = r || HL
-   
-   4)LD A(ss): loads (ss) into A where ss is any 16 bit source register or memory location
-     ss = BC || DE || HL || nn
+   This is going to be alot of comments as theres a lot of loads to cover so i will do
+   them in order of the book and write what each one is then what it does.
+   1) LD ss, n: Used to load any 16-bit source register or memory location into an 8-bit n
+   ss = B,C,D,E,H,L,BC,DE,HL,SP
+   n = 8 bit immediate value
+   Instruction   Parameters   Opcode   Cycles
+   LD            B,n          06       8
+   LD            C,n          0E       8
+   LD            D,n          16       8
+   LD            E,n          1E       8
+   LD            H,n          26       8
+   LD            L,n          2E       8
 
-   5)LD (dd),A: loads A into dd where dd is any 16 bit destination registery or memory location
-     dd = BC || DE || HL || nn
+   2)LD r1, r2: Used to put r2 into r1 where r1 and r2 8-bit registers
+   r1,r2 = A,B,C,D,E,H,L,(HL)
+   Instruction   Parameters   Opcode   Cycles
+   LD            A,A          7F       4
+   LD            A,B          78       4
+   LD            A,C          79       4
+   LD            A,D          7A       4
+   LD            A,E          7B       4
+   LD            A,H          7C       4
+   LD            A,L          7D       4
+   LD            A,(HL)       7E       8
+   LD            B,B          40       4
+   LD            B,C          41       4
+   LD            B,D          42       4
+   LD            B,E          43       4
+   LD            B,H          44       4
+   LD            B,L          45       4
+   LD            B,(HL)       46       8
+   LD            C,B          48       4
+   LD            C,C          49       4
+   LD            C,D          4A       4
+   LD            C,E          4B       4
+   LD            C,H          4C       4
+   LD            C,L          4D       4
+   LD            C,(HL)       4E       8
+   LD            D,B          50       4
+   LD            D,C          51       4
+   LD            D,D          52       4
+   LD            D,E          53       4
+   LD            D,H          54       4
+   LD            D,L          55       4
+   LD            D,(HL)       56       8
+   LD            E,B          59       4
+   LD            E,D          5A       4
+   LD            E,E          5B       4
+   LD            E,H          5C       4
+   LD            E,L          5D       4
+   LD            E,(HL)       5E       8
+   LD            H,B          60       4
+   LD            H,C          61       4
+   LD            H,D          62       4
+   LD            H,E          63       4
+   LD            H,H          64       4
+   LD            H,L          65       4
+   LD            H,(HL)       66       8
+   LD            L,B          68       4
+   LD            L,C          69       4
+   LD            L,D          6A       4
+   LD            L,E          6B       4
+   LD            L,H          6C       4
+   LD            L,L          6D       4
+   LD            L,(HL)       6E       8
+   LD            (HL),B       70       8
+   LD            (HL),C       71       8
+   LD            (HL),D       72       8
+   LD            (HL),E       73       8
+   LD            (HL),H       74       8
+   LD            (HL),L       75       8
+   LD            (HL),n       36       12
 
-   6)LD A, (C): A <-($FF00+C) loads a memory location + CY into register A were CY is the 
-    carry flag
+   3)LD A, s/ss: Used to put the value s/ss into A
+   s/ss = A,B,C,D,E,H,L,(BC),(DE),(HL),(nn),#
+   nn = two byte immediate value. (LS byte first.)
+   Instruction   Parameters   Opcode   Cycles
+   LD            A,A          7F       4
+   LD            A,B          78       4
+   LD            A,C          79       4
+   LD            A,D          7A       4
+   LD            A,E          7B       4
+   LD            A,H          7C       4
+   LD            A,L          7D       4
+   LD            A,(BC)       0A       8
+   LD            A,(DE)       1A       8
+   LD            A,(HL)       7E       8
+   LD            A,(nn)       FA       16
+   LD            A,#          3E       8
 
-   7)LD (C), A: ($FF00+C) <- A loads A into the carry flag memory location.
+   4)LD s/ss/n, A: Used to load A into s/ss/n where
+   s/ss/n = A,B,C,D,E,H,L,(BC),(DE),(HL),(nn)
+   nn = two byte immediate value. (LS byte first.)
+   Instruction   Parameters   Opcode   Cycles
+   LD            A,A          7F       4
+   LD            B,A          47       4
+   LD            C,A          4F       4
+   LD            D,A          57       4
+   LD            E,A          5F       4
+   LD            H,A          67       4
+   LD            L,A          6F       4
+   LD            (BC),A       02       8
+   LD            (DE),A       12       8
+   LD            (HL),A       77       8
+   LD            (nn),A       EA       16
+
+   5)LD A, (C): Used to put the value at address $FF00 + register C
+   into register A, its the asme as: LD A, ($FF00+C)
+   Instruction   Parameters   Opcode   Cycles
+   LD            A,(C)        F2       8
+
+   6)LD (C), A: Used to put A into the address $FF00 + register C
+   Instruction   Parameters   Opcode   Cycles
+   LD           ($FF00+C),A   E2       8
+
+   7) LD A,(HLD)
+   Description: Same as: LDD A,(HL)
    
-   Takes 4 clocks to process an r, any 8 bit register.
-   Takes 8 clocks to process an n, any 8 bit binary number.
-   Takes 8 clocks to process a any register pair or 16 bit register.
-   Takes 12 clocks to process any register pair if the LD d,n function is used.
+   8) LD A,(HL-)
+   Description: Same as: LDD A,(HL)
+
+   9) LD A,(HLI)
+   Description: Same as: LDI A,(HL)
+   
+   10) LD A,(HL+)
+   Description: Same as: LDI A,(HL)
 */
-void LD(register8_t *toRegister, register8_t *fromRegister);
+void LD(register8_t* toRegister, register8_t* fromRegister);
 
 /* Based on opcodes:
-   Loads and decrements whatever is called a the same time.
-   1)LDD A, (HL): A <- (HL) || HL <- HL - 1 think this means loads any 2 bit regiser into A
-   then decrements it by 1 or lodas HL into HL -1 into A.
-
-   2)LDD (HL), A: (HL) <- A || HL <- HL - 1 think this means loads A into any 2 bit register
-   then decrements it by 1 or loads HL into HL -1 into HL.
+   There are multiple things this fucntion must do.
+   1)LDD A,(HL): Used to put the value at the address HL into A,
+   then decrements A, its the sae as LD A, (HL) - DEC HL
+   Instruction   Parameters   Opcode   Cycles
+   LD            A,(HLD)      3A       8
+   LD            A,(HL-)      3A       8
+   LDD           A,(HL)       3A       8
+   
+   2)LDD (HL), A Used to put A into memory address HL then decrements HL it
+   is the same as LD (HL), A - DEC HL
+   Instruction   Parameters   Opcode   Cycles
+   LD            (HLD),A      32       8
+   LD            (HL-),A      32       8
+   LDD           (HL),A       32       8
 */
 void LDD();
 
 /* Based on opcodes:
-   Loads and increments whatever is called a the same time.
-   1)LDI A, (HL): A <- (HL) || HL <- HL + 1 think this means loads any 2 bit regiser into A
-   then increments it by 1 or lodas HL into HL -1 into A.
+   There are multiple things this fucntion must do.
+   1)LDI A,(HL): Used to Put value at address HL into A. Increment HL.
+   Same as: LD A,(HL) - INC HL
+   Instruction   Parameters   Opcode   Cycles
+   LD            A,(HLI)      2A       8
+   LD            A,(HL+)      2A       8
+   LDI           A,(HL)       2A       8
 
-   2)LDI (HL), A: (HL) <- A || HL <- HL + 1 think this means loads A into any 2 bit register
-   then decrements it by 1 or loads HL into HL -1 into HL.
+   2)LDI (HL), A Used to Put A into memory address HL. Increment HL.
+   Same as: LD (HL),A - INC HL
+   Instruction   Parameters   Opcode   Cycles
+   LD            (HLI),A      22       8
+   LD            (HL+),A      22       8
+   LDI           (HL),A       22       8
 */
 void LDI();
 
 
 /* Based on opcodes:
-   Loads A into the address $ff00+n or loads the address into A
-   1)LDH(n),A: ($FF00+n) <- A
-   2)LDH A,(n): A <- ($FF00+n)
+   There are multiple things this fucntion must do.
+   1)LDH (n),A: Used to put A into memory address $FF00+n
+   n = one byte immediate value.
+   Instruction   Parameters   Opcode   Cycles
+   LD           ($FF00+n),A   E0       12
 
+   2)LDI A,(n) Used to Put memory address $FF00+n into A.
+   n = one byte immediate value.
+   Instruction   Parameters   Opcode   Cycles
+   LD           A,($FF00+n)   E0       12
 */
 void LDH();
 
@@ -143,7 +264,7 @@ void LDH();
 
 
 /* Based on opcodes:
-   Loads NN into DD where nn is any 16 bit binary number and dd is any 16 bit 
+   Loads NN into DD where nn is any 16 bit binary number and dd is any 16 bit
    destination register eg
    1) LD dd, nn; dd <- nn; dd = BC,DE,HL,SP; takes 12 cpu clocks to process
 
@@ -155,21 +276,21 @@ void LDH();
 
    Finally it can load the SP+e into HL where e is any 8 bit signed 2's compliment
    discplacement (https://en.wikipedia.org/wiki/Two%27s_complement) eg
-   4) LD HL, (SP+e); HL <- (SP+e); takes 12 cpu clocks; resets z=0 n=0 sets h=* cy=*; 
+   4) LD HL, (SP+e); HL <- (SP+e); takes 12 cpu clocks; resets z=0 n=0 sets h=* cy=*;
 
 */
 void LD_16();
 
 /* Based on opcodes:
-   Pushes ss onto the SP, where ss is any 16-bit source register or memory location, 
+   Pushes ss onto the SP, where ss is any 16-bit source register or memory location,
    ss=BC,DE,HL,AF; takes 16 clocks eg
    1) PUSH ss; (SP-1) <- ssh (h denotes upper 8 bits)
-               (SP-2) <- ssl (l denotes lower 8 bits)
-               SP <- SP - 2  (-2 is used to show we added 2 things to the SP)
+			   (SP-2) <- ssl (l denotes lower 8 bits)
+			   SP <- SP - 2  (-2 is used to show we added 2 things to the SP)
    So in the book says to decrement SP by 1 for each operation, so i think the
    final operation either just there to show how it works, or we have to send
    -2 to SP which will have some sort of counter to know whats in it.
-   
+
 */
 void PUSH(uint8_t register, cpu_register SP);
 
@@ -177,19 +298,19 @@ void PUSH(uint8_t register, cpu_register SP);
    Pops dd off the SP where dd is any 16-bit destination register or memory location
    dd=BC,DE,HL,AF; takes 12 clocks; eg
    1) POP dd; ddl <- (SP) (where l is the lower 8 bits)
-              ddh <- (SP + 1) (where h is the higher 8 bits)
-              SP <- SP + 2 (+2 is used to represent the stack emptying by 2 values)
+			  ddh <- (SP + 1) (where h is the higher 8 bits)
+			  SP <- SP + 2 (+2 is used to represent the stack emptying by 2 values)
    again like with push i think we have to designate some value to allow the cpu
    to know that there is somenthing on the stack already.
 */
 void POP(uint8_t register, cpu_register SP);
 
 /* Needs to set Z to 1 when the result of an operation is 0; otherwise reset
-   Needs to set N to 1 following execution of the substruction instruction, 
+   Needs to set N to 1 following execution of the substruction instruction,
    regardless of the result
-   Needs to set H to 1 when an operation results in carrying from or borrowing 
+   Needs to set H to 1 when an operation results in carrying from or borrowing
    to bit 3
-   Needs to set CY to 1 when an operation results in carry from or borrowing 
+   Needs to set CY to 1 when an operation results in carry from or borrowing
    to bit 7
 */
 
@@ -203,8 +324,8 @@ void POP(uint8_t register, cpu_register SP);
    Takes 4 clocks to process an r, any 8 bit register
    Takes 8 clocks to process an n, any 8 bit binary number
    Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset. 
-   H set if there is a carry from bit 3 otherwise reset. 
+   Z set if the result of the operation is 0 other wise is reset.
+   H set if there is a carry from bit 3 otherwise reset.
    N is always reset.
    CY is set if there is a carry form bit 7 otherwise reset.
    z=*, n=0, h=*, cy=*
@@ -217,8 +338,8 @@ void ADD(uint8_t x);
    Takes 4 clocks to process an r, any 8 bit register.
    Takes 8 clocks to process an n, any 8 bit binary number.
    Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset. 
-   H set if there is a carry from bit 3 otherwise reset. 
+   Z set if the result of the operation is 0 other wise is reset.
+   H set if there is a carry from bit 3 otherwise reset.
    N is always reset.
    CY is set if there is a carry form bit 7 otherwise reset.
    z=*, n=0, h=*, cy=*
@@ -232,8 +353,8 @@ void ADC(uint8_t x);
    Takes 4 clocks to process an r, any 8 bit register.
    Takes 8 clocks to process an n, any 8 bit binary number.
    Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset. 
-   H set if there is a carry from bit 3 otherwise reset. 
+   Z set if the result of the operation is 0 other wise is reset.
+   H set if there is a carry from bit 3 otherwise reset.
    N is always reset.
    CY is set if there is a carry form bit 7 otherwise reset.
    z=*, n=1, h=*, cy=*
@@ -247,8 +368,8 @@ void SUB(uint8_t x);
    Takes 4 clocks to process an r, any 8 bit register.
    Takes 8 clocks to process an n, any 8 bit binary number.
    Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset. 
-   H set if there is a carry from bit 3 otherwise reset. 
+   Z set if the result of the operation is 0 other wise is reset.
+   H set if there is a carry from bit 3 otherwise reset.
    N is always reset.
    CY is set if there is a carry form bit 7 otherwise reset.
    z=*, n=1, h=*, cy=*
@@ -305,7 +426,7 @@ void DEC(uint8_t x);
 // 16 bit Add
 
 /* Based on opcodes:
-   Adds either HL and ss or SP and e together where ss is any 16 bit source register or memory location 
+   Adds either HL and ss or SP and e together where ss is any 16 bit source register or memory location
    and e is the twos compliment of SP eg
    1) ADD HL, ss; HL <- HL + ss; ss=BC,DE,HL,SP; all 8 clocks; z=-, n=0, h=*, cy=*
    2) ADD SP,e; SP <- SP + e; ss=BC,DE,HL,SP; all 16 clocks; z=0, n=0, h=*, cy=*
@@ -342,7 +463,7 @@ void DEC_16()
    s = r, (HL) where s is any 8 bit source register or memory locaiton.
    1) Swap s; swaps nibbles, s=r,(HL); r=8, (HL)=16 clocks; z=*, n=0, h=0, cy=0;
 */
-void SWAP(uint8_t aRegister, uint16_t aRegisterPair);
+void SWAP();
 
 /* Based on opcodes:
    Stands for decimal Adjust Acc, this is a fucntion that seems to be used
@@ -354,7 +475,7 @@ void SWAP(uint8_t aRegister, uint16_t aRegisterPair);
    DAA     ; A <- 0x4B + 0xFA (0x45)
    takes in no registries; takes 4 clocks; z=*, n=-, h=0, cy=*;
 */
-void DAA(cpu_register A, cpu_register aRegister);
+void DAA();
 
 /* Based on opcodes:
    Takes the ones Compliment of the contents of register A,
@@ -362,7 +483,7 @@ void DAA(cpu_register A, cpu_register aRegister);
    number where you invert each bit so 1 is 0 and 0 is 1.
    1) CPL; A <- /A (/A is 1's compliment); 4 clocks; z=-, n=1, h=1, cy=-;
 */
-void CPL(cpu_register A);
+void CPL();
 
 /* Based on opcodes:
    CY 1's compliment if cy is set then reset, if cy is reset then set it.
@@ -381,8 +502,8 @@ void SCF();
 */
 void NOP(cpu_register PC);
 
-/* After a HALT is executed, the system clock is stopped and HALT mode is 
-   enabled, even when halted the LCD will still work. Also the status of 
+/* After a HALT is executed, the system clock is stopped and HALT mode is
+   enabled, even when halted the LCD will still work. Also the status of
    internal ram register ports remains unchanged.
 
    HALT can be canceled by an interupt or reset signal.
@@ -393,7 +514,7 @@ void NOP(cpu_register PC);
 */
 void HALT();
 
-/* STOP instructions stops both system clock and oscillator circuits, 
+/* STOP instructions stops both system clock and oscillator circuits,
    STOP is entered and the LCD is also stopped. the internal RAM is unchangd.
    before entering stop you must make sure all interupt-enable(IE) flags are reset
    all input to p10-p13 is LOW for all
@@ -422,7 +543,7 @@ void EI();
    Z - Set if result is zero.
    N - Reset.
    H - Reset.
-   C - Contains old bit 7 data. 
+   C - Contains old bit 7 data.
    z=0, n=0, h=0, cy=*;
    Instruction Parameters Opcode Cycles
    RLC         -/-        07     4
@@ -430,7 +551,7 @@ void EI();
 void RLCA();
 
 /* Based on opcodes:
-   Used to rotate A left through the carry flag, instead of rotating then 
+   Used to rotate A left through the carry flag, instead of rotating then
    setting the carry flag it incorperates the carry flag
    Z - Set if result is zero.
    N - Reset.
@@ -455,7 +576,7 @@ void RLA();
 void RRCA();
 
 /* Based on opcodes:
-   Used to rotate A right through the carry flag, instead of rotating then 
+   Used to rotate A right through the carry flag, instead of rotating then
    setting the carry flag it incorperates the carry flag
    Z - Set if result is zero.
    N - Reset.
@@ -468,7 +589,7 @@ void RRCA();
 void RRA();
 
 /* Based on opcodes:
-   Used to rotate s left the old bit 7 is placed into the carry flag, 
+   Used to rotate s left the old bit 7 is placed into the carry flag,
    where s is any 8-bit source register or memory location
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if result is zero.
@@ -489,8 +610,8 @@ void RRA();
 void RLC();
 
 /* Based on opcodes:
-   Used to rotate s left through the carry flaginstead of rotating then 
-   setting the carry flag it incorperates the carry flag, 
+   Used to rotate s left through the carry flaginstead of rotating then
+   setting the carry flag it incorperates the carry flag,
    where s is any 8-bit source register or memory location
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if result is zero.
@@ -511,7 +632,7 @@ void RLC();
 void RL();
 
 /* Based on opcodes:
-   Used to rotate s right the old bit 0 is placed into the carry flag, 
+   Used to rotate s right the old bit 0 is placed into the carry flag,
    where s is any 8-bit source register or memory location
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if result is zero.
@@ -532,8 +653,8 @@ void RL();
 void RRC();
 
 /* Based on opcodes:
-   Used to rotate s right through the carry flaginstead of rotating then 
-   setting the carry flag it incorperates the carry flag, 
+   Used to rotate s right through the carry flaginstead of rotating then
+   setting the carry flag it incorperates the carry flag,
    where s is any 8-bit source register or memory location
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if result is zero.
@@ -623,7 +744,7 @@ void SRL();
 
 /* Based on opcodes:
    Used to test a bit b in any s which is any sorce register or memory location.
-   b = 0 - 7, 
+   b = 0 - 7,
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if bit b of register r is 0.
    N - Reset.
@@ -641,10 +762,10 @@ void SRL();
    BIT         b,(HL)     CB 46  16
 */
 void BIT();
- 
+
 /* Based on opcodes:
-   Set Bit b in register s 
-   b = 0 - 7, 
+   Set Bit b in register s
+   b = 0 - 7,
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if bit b of register r is 0.
    N - Reset.
@@ -664,8 +785,8 @@ void BIT();
 void SET();
 
 /* Based on opcodes:
-   Reset Bit b in register s 
-   b = 0 - 7, 
+   Reset Bit b in register s
+   b = 0 - 7,
    s = A,B,C,D,E,H,L,(HL)
    Z - Set if bit b of register r is 0.
    N - Reset.
@@ -689,19 +810,53 @@ void RES();
 
 // Jump Instructions
 
-/* Used to load the operand nn to the PC, nn specifies the address of the 
-   subsequently executed instruction. the lower order byte is placed into 
-   byte 2 of the object code and the higher order byte is placed into byte 3.
+/* Based on opcodes:
+   This function has 3 uses we might need 3 seperate functions, as follows
+   1) Used to jump to an address nn, where nn is any 16-bit binary number
+   in memory.
+   nn = two byte immediate value. (LS byte first meaning least significante byte first.)
+   Instruction Parameters Opcode Cycles
+   JP          nn         C3     12
 
-   not sure what this needs to take but it feels like a pointer to denote nn and 
-   then the register it points to. this is probably wrong, seems more complex 
-   in the book
+   2) Jumps to address n if the foolowing conditions are true where cc is 
+   the flag condition code from C,NC,NZ,Z
+   cc = NZ, Jump if Z flag is reset.
+   cc = Z, Jump if Z flag is set.
+   cc = NC, Jump if C flag is reset.
+   cc = C, Jump if C flag is set.
+   nn = two byte immediate value. (LS byte first.)
+   Instruction Parameters Opcode Cycles
+   JP          NZ, nn     C2     12
+   JP          Z, nn      CA     12
+   JP          NC, nn     D2     12
+   JP          C, nn      DA     12
+
+   3) Jumps to whatever address is contained in HL
+   Instruction Parameters Opcode Cycles
+   JP          HL         E9     4
 */
 void JP();
 
-/* Used to jump an amount of steps between -127 and +129 from the current 
-   address. eg if cc and the flag status do not match the instruction 
-   following the current JP will be executed.
+/* Based on opcodes:
+   This function has 2 uses we might need 2 seperate functions, as follows
+   1) Used to add n to the current address and then jumps to it
+   n = one byte signed immediate value
+   Instruction Parameters Opcode Cycles
+   JR          n          18     8
+
+   2) Jumps to address n if the foolowing conditions are true where cc is
+   the flag condition code from C,NC,NZ,Z
+   n = one byte signed immediate value
+   cc = NZ, Jump if Z flag is reset.
+   cc = Z, Jump if Z flag is set.
+   cc = NC, Jump if C flag is reset.
+   cc = C, Jump if C flag is set.
+   (* is whatever the outcome is with the carrys)
+   Instruction Parameters Opcode Cycles
+   JR          NZ, *      20     8
+   JR          Z, *       28     8
+   JR          NC, *      30     8
+   JR          C, *       38     8
 */
 void JR();
 
@@ -710,46 +865,73 @@ void JR();
 
 // Call and Return Functions.
 
-/* In Memory, pushes the PC value corresponding to the instruction at the address 
-   following that of the CALL instuction to the 2 bytes following the byte 
-   specified by the current SP, operand nn is then loaded into the PC
-  
-   The subroutine is placed after the location specified by the new PC value. 
-   When the SR finishes control is returned to the SP using a return instrcution 
-   and by popping the start address of the next instruction which was just 
-   pushed and moving it to PC.
+/* Based on opcodes:
+   This function has 2 uses we might need 2 seperate functions, as follows
+   1) Used to push the addres of the next instruction onto the stack and 
+   then jump to the next nn address where nn is any 16 bit binary number.
+   nn = two byte immediate value. (LS byte first.)
+   Instruction Parameters Opcode Cycles
+   CALL        nn         CD     8
 
-   With the push the current value of SP is decremented by 1 and the HOB of 
-   the PC is loaded into the memory address specified by SP and then SP is 
-   decremented again.
+   2) Call address n if the following condition is true where cc is
+   the flag condition code from C,NC,NZ,Z
+   n = one byte signed immediate value
+   cc = NZ, Call if Z flag is reset.
+   cc = Z, Call if Z flag is set.
+   cc = NC, Call if C flag is reset.
+   cc = C, Call if C flag is set.
+   Instruction Parameters Opcode Cycles
+   CALL        NZ,nn      C4     12
+   CALL        Z,nn       CC     12
+   CALL        NC,nn      D4     12
+   CALL        C,nn       DC     12
+*/                               
+void CALL();
 
-   There is also a version where you put in a conditional and it if matches 
-   the flag in the F register you can then do the call command so if CC is 
-   true then do nn, needs to make a call to the RET function at somepoint.
+/* Based on opcodes:
+   used to push the present address onto the stack it then
+   jumps to the address $0000 + f where f 8 special call locations
+   in page zero and is defined as follows
+   n = $00,$08,$10,$18,$20,$28,$30,$38
+   Instruction Parameters Opcode Cycles
+   RST         00H        C7     32
+   RST         08H        CF     32
+   RST         10H        D7     32
+   RST         18H        DF     32
+   RST         20H        E7     32
+   RST         28H        EF     32
+   RST         30H        F7     32
+   RST         38H        FF     32
 */
+void RST(cpu_register PC, cpu_register SP);
 
-void CALL(uint8_t *pointerToAddress, cpu_register SP, cpu_register PC);
+/* Based on opcodes:
+   This function has 2 uses and are as follows
+   1) Used to pop two bytes from the stack and then jumps to
+   the poped address
+   n = $00,$08,$10,$18,$20,$28,$30,$38
+   Instruction Parameters Opcode Cycles
+   RET         -/-        C9     8
 
-/* Pops from the memory stack the PC value that was pushed when CALL is called, 
-   returning control to the SP. needs to increment the sp by 2 to get it back 
-   to the top of the stack. like above can have a condition if true thing
+   2)Used to pop two bytes from the stack then jumps to the
+   popped address only if the following conditions are true.
+   cc = NZ, Return if Z flag is reset.
+   cc = Z, Return if Z flag is set.
+   cc = NC, Return if C flag is reset.
+   cc = C, Return if C flag is set.
+   Instruction Parameters Opcode Cycles
+   RET         NZ         C0     8
+   RET         Z          C8     8
+   RET         NC         D0     8
+   RET         C          D8     8
 */
 void RET(cpu_register PC, cpu_register SP);
 
-/* Used when an interupt-service routine finishes, executed as follows.
-   the address for the return from the interupt is loaded into the PC
-   the master interrupt enable flag is returned to its pre-interupt status.
-   so it pops the stack then gets interupted.
+/* Based on opcodes:
+   Used to pop two bytes from the stack and jumps to that address
+   then enables the interupter
+   Instruction Parameters Opcode Cycles
+   RETI        -/-        D9     8
 */
 void RETI(cpu_register PC, cpu_register SP /*someinterupt.*/);
 
-/* Pushes the current value of the PC to the memory stack and loads the  
-   page 0 memory addresses provided by some operand t. Then the next
-   instuction is fetched from the addess specified by the new content of PC 
-
-   same steps as before with the poping and pushing.
-
-   the RST instruction canbe used to jump from 1 of 8 addresses though.
-   need to check the book for these references, dont want to write them here.
-*/
-void RST(cpu_register PC, cpu_register SP);
