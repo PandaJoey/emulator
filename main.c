@@ -56,6 +56,22 @@ uint8_t flag_H_calc(uint8_t x, uint8_t y) {
 	return (x + y) >> 4;
 }
 
+uint8_t flag_H_borrow(uint8_t x, uint8_t y) {
+  if (((x >> 3) & 0) == 0 && ((y >> 3) & 1) == 1) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+uint8_t flag_CY_borrow(uint8_t x, uint8_t y) {
+  if (((x >> 7) & 0) == 0 && ((y >> 7) & 1) == 1) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Arithmetric functions
 
@@ -89,7 +105,16 @@ void ADC(uint8_t x) {
 }
 
 void SUB(uint8_t x) {
+  set_N(1);
+  // Is this correct for subtract?
+  set_H(flag_H_borrow(cpuRegister.A, x));
+  set_CY(flag_CY_borrow(cpuRegister.A, x));
 	cpuRegister.A -= x;
+  if (cpuRegister.A == 0) {
+    set_Z(1);
+  } else {
+    set_Z(0);
+  }
 }
 
 
@@ -164,13 +189,13 @@ void XOR(uint8_t x) {
 
 int main() {
 	memory = (uint8_t*)malloc(memorysize * sizeof(uint8_t));
-	cpuRegister.A = 0x80;
+	cpuRegister.A = 0x0;
 	cpuRegister.F = 0;
 	printf("value of A before RRCA %x\n", cpuRegister.A);
 	printf("value of F before RRCA %x\n", cpuRegister.F);
 	printf("First Print Value %d\n\n\n", get_AF());
 	set_CY(0);
-	ADC(0x80);
+	SUB(0xFF);
 	printf("value of A after RRCA %x\n", cpuRegister.A);
 	printf("value of F after RRCA %x\n", cpuRegister.F);
 	printf("Value of AF Pair after RLCA %d\n", get_AF());
