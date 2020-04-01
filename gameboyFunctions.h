@@ -410,57 +410,171 @@ void SBC(cpu_register A, uint8_t x);
 // Logical Operators
 
 /* Based on opcodes:
-   Checks to see if register A is the same as register s where s is any 8-bit regsiter
-   s=r,n,(HL) eg
-   1) ADD s; A <- A && s; s=r,n,(HL); r=4, n=8, (HL)=8; z=*, n=0, h=1, cy=0
+   AND s;
+   Logically checks AND s with A, it then stores the results of the and in
+   register A eg 1001001 AND 1010001 would result in 10000001 as only the 1's
+   output a 1; 
+   s=A,B,C,D,E,H,L,(HL),#
+   Z - Set if result is zero.
+   N - Reset.
+   H - Set.
+   C - Reset.
+   z=*, n=0, h=1, cy=0
+   Instruction     Parameters     Opcode     Cycles
+   AND             A              A7         4
+   AND             B              A0         4
+   AND             C              A1         4
+   AND             D              A2         4
+   AND             E              A3         4
+   AND             H              A4         4
+   AND             L              A5         4
+   AND             (HL)           A6         8
+   AND             #              E6         8
 */
 void AND(uint8_t x);
 
 /* Based on opcodoes:
-   Checks to see if any of the bits in A are the same as s where s is any 8 bit register
-   s=r,n,(HL) eg
-   1) OR s: A <- A || s; s=r,n,(HL); r=4, n=8, (HL)=8; z=*, n=0, h=0, cy=0
+   OR s:
+   Logical OR s with register A, result placed in A eg
+   10010010 OR 10111000 = 10111010
+   s=A,B,C,D,E,H,L,(HL), #
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Reset.
+   z=*, n=0, h=0, cy=0
+   Instruction     Parameters     Opcode     Cycles
+   OR              A              B7         4
+   OR              B              B0         4
+   OR              C              B1         4
+   OR              D              B2         4
+   OR              E              B3         4
+   OR              H              B4         4
+   OR              L              B5         4
+   OR              (HL)           B6         8
+   OR              #              F6         8
 */
 void OR(uint8_t x);
 
 /* Based on opcodoes:
-   Checks the XOR of the bits in A compared to s where s is any 8 bit register
-   s=r,n,(HL) eg
-   1) OR s: A <- A ^| s; s=r,n,(HL); r=4, n=8, (HL)=8; z=*, n=0, h=0, cy=0
+   XOR n;
+   Logical XOR s with register A places the results in A eg
+   11100011 XOR 00111011 = 11011000
+   s=A,B,C,D,E,H,L,(HL), #
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Reset.
+   z=*, n=0, h=0, cy=0
+   Instruction     Parameters     Opcode     Cycles
+   XOR             A              AF         4
+   XOR             B              A8         4
+   XOR             C              A9         4
+   XOR             D              AA         4
+   XOR             E              AB         4
+   XOR             H              AC         4
+   XOR             L              AD         4
+   XOR             (HL)           AE         8
+   XOR             *              EE         8
+
 */
 void XOR(uint8_t x);
 
 /* Based on opcodoes:
-   CP is used to compare the contents of A with s where s is any 8 bit register
-   s=r,n,(HL) if they are the same flags are set eg
-   1) CP s; A == s; s=r,n,(HL); r=4, n=8, (HL)=8; z=*, n=1, h=*, cy=*
+   CP s
+   Compares A with s, this is basically an A - n subtraction instruction but
+   the results are thrown away.
+   s=A,B,C,D,E,H,L,(HL), #
+   Z - Set if result is zero. (Set if A = n.)
+   N - Set.
+   H - Set if no borrow from bit 4.
+   C - Set for no borrow. (Set if A < n.)
+   z=*, n=1, h=*, cy=*
+   Instruction     Parameters     Opcode     Cycles
+   CP              A              BF         4
+   CP              B              B8         4
+   CP              C              B9         4
+   CP              D              BA         4
+   CP              E              BB         4
+   CP              H              BC         4
+   CP              L              BD         4
+   CP              (HL)           BE         8
+   CP              #              FE         8
 */
 void CP(uint8_t x);
 
 //Cremental functions
 
 /* Based on opcodes:
-   Increments s by 1 where s is any 8-bit source register or memory location
-   where s=r,(HL) (not sure why HL, seems HL is a special case 16-bit register) eg
-   1) INC s; s <- s + 1; s=r,(HL); r=4, (HL)=12 clocks; z=*, n=0, h=*, cy=-;
+   INC s;
+   Used to increment a register s by 1.
+   s=A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Set if carry from bit 3.
+   C - Not affected.
+   z=*, n=0, h=*, cy=-
+   Instruction     Parameters     Opcode     Cycles
+   INC             A              3C         4
+   INC             B              04         4
+   INC             C              0C         4
+   INC             D              14         4
+   INC             E              1C         4
+   INC             H              24         4
+   INC             L              2C         4
+   INC             (HL)           34         12
 */
 void INC(uint8_t x);
 
 /* Based on opcodes:
-   Decrements s by 1 where s is any 8-bit source register or memory locaiton,
-   where s=r,(HL) eg
-   1) DEC s; s <- s - 1; s=r,(HL); r=4, (HL)=12 clocks; z=*, n=1, h=*, cy=-
+   DEC s;
+   Used to Decrement register s by 1.
+   s=A,B,C,D,E,H,L,(HL)
+   Z - Set if reselt is zero.
+   N - Set.
+   H - Set if no borrow from bit 4.
+   C - Not affected.
+   z=*, n=1, h=*, cy=-
+   Instruction     Parameters     Opcode     Cycles
+   DEC             A              3D         4
+   DEC             B              05         4
+   DEC             C              0D         4
+   DEC             D              15         4
+   DEC             E              1D         4
+   DEC             H              25         4
+   DEC             L              2D         4
+   DEC             (HL)           35         12
 */
 void DEC(uint8_t x);
 
 // 16 bit Add
 
 /* Based on opcodes:
-   Adds either HL and ss or SP and e together where ss is any 16 bit source register or memory location
-   and e is the twos compliment of SP eg
-   1) ADD HL, ss; HL <- HL + ss; ss=BC,DE,HL,SP; all 8 clocks; z=-, n=0, h=*, cy=*
-   2) ADD SP,e; SP <- SP + e; ss=BC,DE,HL,SP; all 16 clocks; z=0, n=0, h=*, cy=*
+   There are two functions for 16 bit adds and are as follows
+   1)Add HL, ss;
+   Used to add ss to HL
+   ss=BC,DE,HL,SP
+   Z - Not affected.
+   N - Reset.
+   H - Set if carry from bit 11.
+   C - Set if carry from bit 15. 
+   Instruction     Parameters     Opcode     Cycles
+   ADD             HL,BC          09         8
+   ADD             HL,DE          19         8
+   ADD             HL,HL          29         8
+   ADD             HL,SP          39         8
+   z=-, n=0, h=*, cy=*
 
+   2)ADD SP, e
+   Used to add ss to the stack pointer (SP);
+   e = 8-bit signed 2's complement displacement (#)
+   Z - Reset.
+   N - Reset.
+   H - Set or reset according to operation.
+   C - Set or reset according to operation.
+   z=0, n=0, h=*, cy=*
+   Instruction     Parameters     Opcode     Cycles
+   ADD             SP,e/#           E8 16
    These might have to be seperated or might be abled to be done in standard add
 */
 void ADD_16();
@@ -469,16 +583,29 @@ void ADD_16();
 // 16 bit cremental functions (may not be required just here for clairty)
 
 /* Based on opcodes:
-   Increments ss by 1 where ss is any 16-bit source register or memory location
-   where s=BC,DE,HL,SP eg
-   1) INC ss; ss <- ss + 1; s=BC,DE,HL,SP; all 8 clocks; z=-, n=-, h=-, cy=-;
+   INC ss;
+   Used to increment register ss by 1
+   ss=BC,DE,HL,SP
+   z=-, n=-, h=-, cy=-;
+   Instruction     Parameters     Opcode     Cycles
+   INC             BC             03         8
+   INC             DE             13         8
+   INC             HL             23         8
+   INC             SP             33         8
+   z=-, n=-, h=-, cy=-;
 */
 void INC_16();
 
 /* Based on opcodes:
-   Decrements ss by 1 where ss is any 16-bit source register or memory locaiton,
-   where s=BC,DE,HL,SP eg
-   1) INC ss; ss <- ss - 1; s=BC,DE,HL,SP; all 8 clocks; z=-, n=-, h=-, cy=-;
+   DEC ss;
+   Used to decrement register ss by 1
+   ss=BC,DE,HL,SP
+   z=-, n=-, h=-, cy=-;
+   Instruction     Parameters     Opcode     Cycles
+   DEC             BC             0B         8
+   DEC             DE             1B         8
+   DEC             HL             2B         8
+   DEC             SP             3B         8
 */
 void DEC_16();
 
@@ -489,13 +616,32 @@ void DEC_16();
 
 
 /* Based on opcodes:
-   SWAP s: Swaps the contents of bits 0-3 with 4-7, swaps nibbles. where
-   s = r, (HL) where s is any 8 bit source register or memory locaiton.
-   1) Swap s; swaps nibbles, s=r,(HL); r=8, (HL)=16 clocks; z=*, n=0, h=0, cy=0;
+   SWAP s;
+   Used to swap the upper 4 bits with the lower 4 bits/nibbles or any s
+   register eg 11110000 = 00001111
+   s = A,B,C,D,E,H,L,(HL)
+   Z - Set if result is zero.
+   N - Reset.
+   H - Reset.
+   C - Reset.   
+   z=*, n=0, h=0, cy=0;
+   Instruction     Parameters     Opcode     Cycles
+   SWAP            A              CB 37      8
+   SWAP            B              CB 30      8
+   SWAP            C              CB 31      8
+   SWAP            D              CB 32      8
+   SWAP            E              CB 33      8
+   SWAP            H              CB 34      8
+   SWAP            L              CB 35      8
+   SWAP            (HL)           CB 36      16
 */
 void SWAP();
 
 /* Based on opcodes:
+   DDA
+   Used tO Decimal Adjust Register a meaning it This instruction adjusts 
+   register A so that the correct representation of Binary Coded Decimal (BCD)
+   is obtained.
    Stands for decimal Adjust Acc, this is a fucntion that seems to be used
    after ADD, ADC, SUB,SBC instuctions, binary coded decimal representation
    is used to set the contents of register A to a BCD eg:
@@ -503,32 +649,64 @@ void SWAP();
    DAA     ; A <- 0x7D, 0X06 (0X83), CY <- 0
    SUB A, B; A <- 0x83 - 0X38 (0X4B) N <- 1
    DAA     ; A <- 0x4B + 0xFA (0x45)
-   takes in no registries; takes 4 clocks; z=*, n=-, h=0, cy=*;
+   Z - Set if register A is zero.
+   N - Not affected.
+   H - Reset.
+   C - Set or reset according to operation.
+   z=*, n=-, h=0, cy=*;
+   Instruction     Parameters     Opcode     Cycles
+   DAA             -/-            27         4
 */
 void DAA();
 
 /* Based on opcodes:
+   CPL
+   Used to get the compliment of register A eg flip all bits
    Takes the ones Compliment of the contents of register A,
    if like me you forgot what that is its the inverted binary
    number where you invert each bit so 1 is 0 and 0 is 1.
-   1) CPL; A <- /A (/A is 1's compliment); 4 clocks; z=-, n=1, h=1, cy=-;
+   Z - Not affected.
+   N - Set.
+   H - Set.
+   C - Not affected.
+   z=-, n=1, h=1, cy=-;
+   Instruction     Parameters     Opcode     Cycles
+   CPL             -/-            2F         4
 */
 void CPL();
 
 /* Based on opcodes:
-   CY 1's compliment if cy is set then reset, if cy is reset then set it.
-   1) CFF; CY <- /CY; 4 clocks; z=-, n=0, h=0, cy=*;
+   CCF;
+   Used to find decide if we need to use the carry flag CY
+   If CY flag is set, then reset it
+   IF CY flag is reset, then set it
+   Z - Not affected.
+   N - Reset.
+   H - Reset.
+   C - Complemented  
+   z=-, n=0, h=0, cy=*;
+   Instruction     Parameters     Opcode     Cycles
+   CCF             -/-            3F         4
 */
 void CCF();
 
 /* Based on opcodes:
+   SCF
    Used to set the carry flag
-   1) SCF; CY <- 1; 4 clocks; z=-, n=0, h=0, cy=1;
+   Z - Not affected.
+   N - Reset.
+   H - Reset.
+   C - Set.  
+   z=-, n=0, h=0, cy=1;
+   Instruction     Parameters     Opcode     Cycles
+   SCF             -/-            37         4
 */
 void SCF();
 
 /* Only advnaces the program counter by 1 has no other operations that have
    an effect.
+   Instruction     Parameters     Opcode     Cycles
+   NOP             -/-            00         4
 */
 void NOP(cpu_register PC);
 
@@ -541,6 +719,8 @@ void NOP(cpu_register PC);
    the PC is halted at the step after the HALT, if both the interupt
    request flag and the corrosponding interupt enable flag are set
    HALT can be exited. or you can use a master interupt
+   Instruction     Parameters     Opcode     Cycles
+   HALT            -/-            76         4
 */
 void HALT();
 
@@ -548,18 +728,25 @@ void HALT();
    STOP is entered and the LCD is also stopped. the internal RAM is unchangd.
    before entering stop you must make sure all interupt-enable(IE) flags are reset
    all input to p10-p13 is LOW for all
+   Instruction     Parameters     Opcode     Cycles
+   STOP            -/-            10 00      4
 */
 void STOP();
 
 /* Based on opcodes:
    This instruction disables interrupts but not immediately. Interrupts are disabled after
    instruction after DI is executed.
+   Instruction     Parameters     Opcode     Cycles
+   DI              -/-            F3         4
+
 */
 void DI();
 
 /* Based on opcodes:
    Enable interrupts. This intruction enables interrupts but not immediately. Interrupts are enabled after
    instruction after EI is executed.
+   Instruction     Parameters     Opcode     Cycles
+   EI              -/-            FB         4
 */
 void EI();
 
@@ -569,6 +756,7 @@ void EI();
 // Rotate shift instructions 
 
 /* Based on opcodes:
+   RLCA;
    Used to rotate A left, the old bit 7 is placed into the carry flag
    Z - Set if result is zero.
    N - Reset.
