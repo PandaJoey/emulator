@@ -1,0 +1,107 @@
+Tiles:
+The main GameBoy screen buffer (background) consists of 256x256 pixels or 32x32 tiles (8x8 pixels each).
+Only 160x144 pixels can be displayed on the screen. Registers SCROLLX and SCROLLY hold the coordinates of
+background to be displayed in the left upper corner of the screen. Background wraps around the screen (i.e.
+when part of it goes off the screen, it appears on the opposite side.) An area of VRAM known as Background 
+Tile Map contains the numbers of tiles to be displayed. It is organized as 32 rows of 32 bytes each. 
+Each byte contains a number of a tile to be displayed. Tile patterns are taken from the Tile Data Table 
+located either at:
+$8000-8FFF or $8800-97FF. 
+In the first case, patterns are numbered with unsigned numbers from 0 to 255 (i.e. pattern #0 lies at address $8000). 
+In the second case, patterns have signed numbers from -128 to 127 (i.e. pattern #0 lies at address $9000). 
+The Tile Data Table address for the background can be selected via LCDC register.  Besides background, 
+there is also a "window" overlaying the background. The window is not scrollable i.e. it is always displayed starting 
+from its left upper corner. The location of a window on the screen can be adjusted via 
+WNDPOSX and WNDPOSY registers. 
+Screen coordinates of the top left corner of a window are 
+WNDPOSX-7,WNDPOSY. 
+The tile numbers for the window are stored in the Tile Data Table. None of the windows tiles are ever transparent. 
+Both the Background and the window share the  same Tile Data Table. Both background and window can be disabled or 
+enabled separately via bits in the LCDC register. If the window is used and a scan line interrupt disables it 
+(either by writing to LCDC or by setting WX > 166) 
+and a scan line interrupt a little later on enables it then the window will resume appearing on the screen at the 
+exact position  of the window where it left off earlier. This way, even if there are only 16 lines of useful graphics 
+in the window, you could display the first 8 lines at the top of the screen and the next 8 lines at the bottom if you 
+wanted to do so. WX may be changed during a scan line interrupt 
+(to either cause a graphic distortion effect or to disable the window (WX>166) ) 
+but changes to WY are not dynamic and won't be noticed until the next screen redraw. The tile images are stored 
+in the Tile Pattern Tables. 
+Each 8x8 image occupies 16 bytes, where each 2 bytes represent a line:
+
+Tile:                                              Image:
+ .33333..                                          .33333.. -> 01111100 -> $7C
+ 22...22.                                                      01111100 -> $7C
+ 11...11.                                          22...22. -> 00000000 -> $00
+ 2222222. <-- digits represent colour numbers                  11000110 -> $C6
+ 33...33.                                          11...11. -> 11000110 -> $C6
+ 22...22.                                                      00000000 -> $00
+ 11...11.                                          2222222. -> 00000000 -> $00
+ ........                                                      11111110 -> $FE
+                                                   33...33. -> 11000110 -> $C6
+                                                   11000110 -> $C6
+                                                   22...22. -> 00000000 -> $00
+                                                   11000110 -> $C6
+                                                   11...11. -> 11000110 -> $C6
+                                                   00000000 -> $00
+                                                   ........ -> 00000000 -> $00
+                                                   00000000 -> $00
+
+As it was said before, there are two Tile Pattern Tables at $8000-8FFF and at $8800-97FF. The first one
+can be used for sprites, the background, and the window display. Its tiles are numbered from 0 to 255.
+The second table can be used for the background and the window display and its tiles are numbered from
+-128 to 127.
+
+Sprites:
+GameBoy video controller can display up to 40 sprites either in 8x8 or in 8x16 pixels. Because of a
+limitation of hardware, only ten sprites can be displayed per scan line. Sprite patterns have the same
+format as tiles, but they are taken from the Sprite Pattern Table located at $8000-8FFF and have unsigned
+numbering. Sprite attributes reside in the Sprite Attribute Table (OAM - Object Attribute Memory) at
+$FE00-FE9F. OAM is divided into 40 4-byte blocks each of which corresponds to a sprite.
+
+In 8x16 sprite mode, the least significant bit of the sprite pattern number is ignored and treated as 0.
+
+When sprites with different x coordinate values overlap, the one with the smaller x coordinate 
+(closer to the left) will have priority and appear above any others.
+
+When sprites with the same x coordinate values overlap, they have priority according to table
+ordering. (i.e. $FE00 - highest, $FE04 - next highest, etc.)
+
+Please note that Sprite X=0, Y=0 hides a sprite. To display a sprite use the following formulas:
+SpriteScreenPositionX (Upper left corner of sprite) = SpriteX - 8
+SpriteScreenPositionY (Upper left corner of sprite) = SpriteY - 16
+
+To display a sprite in the upper left corner of the screen set sprite X=8, Y=16.
+
+Only 10 sprites can be displayed on any one line. When this limit is exceeded, the lower priority
+sprites (priorities listed above) won't be displayed. To keep unused sprites from affecting onscreen sprites
+set their Y coordinate to Y=0 or Y=>144+16. Just setting the X coordinate to X=0 or X=>160+8 on a
+sprite will hide it but it will still affect other sprites sharing the same lines.
+Blocks have the following format:
+      Byte0 Y position on the screen
+      Byte1 X position on the screen
+      Byte2 Pattern number 0-255 (Unlike some tile numbers, sprite pattern numbers are unsigned.
+            LSB is ignored (treated as 0) in 8x16 mode.)
+      Byte3 Flags:
+                  Bit7 Priority
+                  If this bit is set to 0, sprite is displayed on top of background & window. 
+                  If this bit is set to 1, then sprite will be hidden behind colors 1, 2, and 3
+                  of the background & window. (Sprite only prevails over color 0 of BG & win.)
+                  Bit6 Y flip
+                  Sprite pattern is flipped vertically if this bit is set to 1.
+                  Bit5 X flip
+                  Sprite pattern is flipped horizontally if this bit is set to 1.
+                  Bit4 Palette number
+                  Sprite colors are taken from OBJ1PAL if this bit is set to 1 and from OBJ0PAL
+                  otherwise.
+
+Sprite Ram Bug:
+There is a flaw in the GameBoy hardware that causes trash to be written to OAM RAM if the following
+commands are used while their 16-bit content is in the range of $FE00 to $FEFF:
+inc xx (xx = bc,de, or hl)
+dec xx
+ldi a,(hl)
+ldd a,(hl)
+ldi (hl),a
+ldd (hl),a
+Only sprites 1 & 2 ($FE00 & $FE04) are not affected by these instructions.
+
