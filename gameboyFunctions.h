@@ -282,37 +282,31 @@ void LDH();
 void LD_16();
 
 /* Based on opcodes:
-   Pushes ss onto the SP, where ss is any 16-bit source register or memory location,
-   ss=BC,DE,HL,AF; takes 16 clocks eg
-   1) PUSH ss; (SP-1) <- ssh (h denotes upper 8 bits)
-			   (SP-2) <- ssl (l denotes lower 8 bits)
-			   SP <- SP - 2  (-2 is used to show we added 2 things to the SP)
-   So in the book says to decrement SP by 1 for each operation, so i think the
-   final operation either just there to show how it works, or we have to send
-   -2 to SP which will have some sort of counter to know whats in it.
-
+   PUSH ss;
+   Pushes register pair ss onto the stack and then decrements the stack pointer SP
+   twice.
+   ss=AF,BC,DE,HL
+   Instruction     Parameters     Opcode     Cycles
+   PUSH            AF             F5         16
+   PUSH            BC             C5         16
+   PUSH            DE             D5         16
+   PUSH            HL             E5         16
+                                  
 */
 void PUSH(uint8_t register, cpu_register SP);
 
 /* Based on opcodes:
-   Pops dd off the SP where dd is any 16-bit destination register or memory location
-   dd=BC,DE,HL,AF; takes 12 clocks; eg
-   1) POP dd; ddl <- (SP) (where l is the lower 8 bits)
-			  ddh <- (SP + 1) (where h is the higher 8 bits)
-			  SP <- SP + 2 (+2 is used to represent the stack emptying by 2 values)
-   again like with push i think we have to designate some value to allow the cpu
-   to know that there is somenthing on the stack already.
+   POP ss;
+   Pops two bytes off the stack into a register pair ss, then increments SP twice;
+   ss=AF,BC,DE,L
+   Instruction     Parameters     Opcode     Cycles
+   POP             AF             F1         12
+   POP             BC             C1         12
+   POP             DE             D1         12
+   POP             HL             E1         12
+
 */
 void POP(uint8_t register, cpu_register SP);
-
-/* Needs to set Z to 1 when the result of an operation is 0; otherwise reset
-   Needs to set N to 1 following execution of the substruction instruction,
-   regardless of the result
-   Needs to set H to 1 when an operation results in carrying from or borrowing
-   to bit 3
-   Needs to set CY to 1 when an operation results in carry from or borrowing
-   to bit 7
-*/
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -320,59 +314,95 @@ void POP(uint8_t register, cpu_register SP);
 // 8-bit ALU fucntions
 
 /* Based on opcodes:
-   Adds A = A + s, s is any 8 bit source register or memory location s= r || n || HL.
-   Takes 4 clocks to process an r, any 8 bit register
-   Takes 8 clocks to process an n, any 8 bit binary number
-   Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset.
-   H set if there is a carry from bit 3 otherwise reset.
-   N is always reset.
-   CY is set if there is a carry form bit 7 otherwise reset.
+   ADD A,s; 
+   Adds s to A 
+   s=A,B,C,D,E,H,L,(HL),#
+   Z - Set if result is zero.
+   N - Reset.
+   H - Set if carry from bit 3.
+   C - Set if carry from bit 7.
    z=*, n=0, h=*, cy=*
+   Instruction     Parameters     Opcode     Cycles
+   ADD             A,A            87         4
+   ADD             A,B            80         4
+   ADD             A,C            81         4
+   ADD             A,D            82         4
+   ADD             A,E            83         4
+   ADD             A,H            84         4
+   ADD             A,L            85         4
+   ADD             A,(HL)         86         8
+   ADD             A,#            C6         8
 
 */
 void ADD(uint8_t x);
 
 /* Based on opcodes:
-   Adds A = A + s + CY, s is any 8 bit source register or memory location s = r || n || HL.
-   Takes 4 clocks to process an r, any 8 bit register.
-   Takes 8 clocks to process an n, any 8 bit binary number.
-   Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset.
-   H set if there is a carry from bit 3 otherwise reset.
-   N is always reset.
-   CY is set if there is a carry form bit 7 otherwise reset.
+   ADC A, s;
+   Adds s + CY to A
+   s=A,B,C,D,E,H,L,(HL),#
+   Z - Set if result is zero.
+   N - Reset.
+   H - Set if carry from bit 3.
+   C - Set if carry from bit 7.
    z=*, n=0, h=*, cy=*
+   Instruction     Parameters     Opcode     Cycles
+   ADC             A,A            8F         4
+   ADC             A,B            88         4
+   ADC             A,C            89         4
+   ADC             A,D            8A         4
+   ADC             A,E            8B         4
+   ADC             A,H            8C         4
+   ADC             A,L            8D         4
+   ADC             A,(HL)         8E         8
+   ADC             A,#            CE         8
 
 
 */
 void ADC(uint8_t x);
 
 /* Based on opcodes:
-   Subtracts A = A - s, s is any 8 bit source register or memory location s = r || n || HL.
-   Takes 4 clocks to process an r, any 8 bit register.
-   Takes 8 clocks to process an n, any 8 bit binary number.
-   Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset.
-   H set if there is a carry from bit 3 otherwise reset.
-   N is always reset.
-   CY is set if there is a carry form bit 7 otherwise reset.
+   SUB s:
+   Subtracts s from A
+   s=A,B,C,D,E,H,L,(HL),#
+   Z - Set if result is zero.
+   N - Set.
+   H - Set if no borrow from bit 4.
+   C - Set if no borrow.
    z=*, n=1, h=*, cy=*
-
+   Instruction     Parameters     Opcode     Cycles
+   SUB             A              97         4
+   SUB             B              90         4
+   SUB             C              91         4
+   SUB             D              92         4
+   SUB             E              93         4
+   SUB             H              94         4
+   SUB             L              95         4
+   SUB             (HL)           96         8
+   SUB             #              D6         8
 
 */
 void SUB(uint8_t x);
 
 /* Based on opcodes:
-   Subtracts A = A - s - CY, s is any 8 bit source register or memory location s = r || n || HL.
-   Takes 4 clocks to process an r, any 8 bit register.
-   Takes 8 clocks to process an n, any 8 bit binary number.
-   Takes 8 clocks to process a any register pair or 16 bit register.
-   Z set if the result of the operation is 0 other wise is reset.
-   H set if there is a carry from bit 3 otherwise reset.
-   N is always reset.
-   CY is set if there is a carry form bit 7 otherwise reset.
+   SBC A, s;
+   Subtracts s + CY from A
+   s=A,B,C,D,E,H,L,(HL),#
+   Z - Set if result is zero.
+   N - Set.
+   H - Set if no borrow from bit 4.
+   C - Set if no borrow.
    z=*, n=1, h=*, cy=*
+   Instruction     Parameters     Opcode     Cycles
+   SBC             A,A            9F         4
+   SBC             A,B            98         4
+   SBC             A,C            99         4
+   SBC             A,D            9A         4
+   SBC             A,E            9B         4
+   SBC             A,H            9C         4
+   SBC             A,L            9D         4
+   SBC             A,(HL)         9E         8
+   SBC             A,#            ??         ?
+
 
 */
 void SBC(cpu_register A, uint8_t x);
