@@ -1,0 +1,20 @@
+Timer:
+The timer in the gameboy has a selectable frequency in hertz for interupts these are
+4096
+16384
+65536
+262144
+These frequencies increment the (TIMA) timer counter. when it overflows, it generates an interupt.
+It is then loaded with the contents of the (TMA) timer modulo below are examples:
+
+This interval timer interrupts 4096 times per second:
+    ld a,-1
+    ld ($FF06),a ;Set TMA to divide clock by 1
+    ld a,4
+    ld ($FF07),a ;Set clock to 4096 Hertz
+
+This interval timer interrupts 65536 times per second
+    ld a,-4
+    ld ($FF06),a ;Set TMA to divide clock by 4
+    ld a,5
+    ld ($FF07),a ;Set clock to 262144 Hertz

@@ -1,0 +1,38 @@
+Sound:
+Two channels connected to output terminals S01 s02, One input terminal connected to the cartridge.
+the input can be routed to either or both outputs, there are 4 ways to produce sounds:
+
+Quadrangular wave patterns with sweep and envelope functions. 
+Quadrangular wave patterns with envelope functions. 
+Voluntary wave patterns from wave RAM.
+White noise with an envelope function.
+
+These can be controlled independantly and mixed spereratly for each output also sound registers 
+can be set at all times while they are producing sounds.
+
+When setting the initial value of the envelope and restarting the length counter, set the initial 
+flag to 1 and initialize the data:
+
+Under the following situations the Sound ON flag is reset and the sound output stops:
+1. When the sound output is stopped by the length counter.
+2. When overflow occurs at the addition mode while sweep is operating at sound 1.
+
+When the (Sound OFF) flag for sound 3 (bit 7 of NR30) is set at 0, the cancellation of the OFF
+mode must be done by setting the sound OFF flag to 1. By initializing sound 3, 
+it starts it's function.
+
+When the (All Sound OFF) flag (bit 7 of NR52) is set to 0, the mode registers for sounds 1,2,3, 
+and 4 are reset and the sound output stops. (NOTE: The setting of each sounds mode register 
+must be done after the (All Sound OFF) mode is cancelled. During the (All Sound OFF)mode, each 
+sound mode register cannot be set.)
+
+using no sound reduces power by 16% again probably not relivant to us.
+
+*****IMPORTANT*****
+These tend to be the two most important equations in converting between Hertz and GB frequency 
+registers: (Sounds will have a 2.4% higher frequency on SuperGB.)
+gb = 2048 - (131072 / Hz)
+Hz = 131072 / (2048 - gb)
+*****IMPORTANT*****
+
+

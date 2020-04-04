@@ -1,0 +1,193 @@
+Special Registers:
+I/O Registers:
+
+FF00(P1):
+    Name - P1
+    Contents - Register for reading joy pad info and determining system type. (R/W)
+        Bit 7 - Not used
+        Bit 6 - Not used
+        Bit 5 - P15 out port
+        Bit 4 - P14 out port
+        Bit 3 - P13 in port
+        Bit 2 - P12 in port
+        Bit 1 - P11 in port
+        Bit 0 - P10 in port
+        
+        This is the matrix layout for register $FF00:
+                 P14          P15
+                  |           |
+        P10-------O-Right----O-A
+                  |           |
+        P11-------O-Left-----O-B
+                  |           |
+        P12-------O-Up-------O-Select
+                  |           |
+        P13-------O-Down-----O-Start
+                  |           |
+        
+        Example code:
+        Game: Ms. Pacman
+        Address: $3b1
+        LD A,$20 <- bit 5 = $20
+        LD ($FF00),A <- select P14 by setting it low
+        LD A,($FF00)
+        LD A,($FF00) <- wait a few cycles
+        CPL <- complement A
+        AND $0F <- get only first 4 bits
+        SWAP A <- swap it
+        LD B,A <- store A in B
+        LD A,$10
+        LD ($FF00),A <- select P15 by setting it low
+        LD A,($FF00)
+        LD A,($FF00)
+        LD A,($FF00)
+        LD A,($FF00)
+        LD A,($FF00)
+        LD A,($FF00) <- Wait a few MORE cycles
+        CPL <- complement (invert)
+        AND $0F <- get first 4 bits
+        OR B <- put A and B together
+        LD B,A <- store A in D
+        LD A,($FF8B) <- read old joy data from ram
+        XOR B <- toggle w/current button bit
+        AND B <- get current button bit back
+        LD ($FF8C),A <- save in new Joydata storage
+        LD A,B <- put original value in A
+        LD ($FF8B),A <- store it as old joy data
+        LD A,$30 <- deselect P14 and P15
+        LD ($FF00),A <- RESET Joypad
+        RET <- Return from Subroutine
+        The button values using the above method are
+        such:
+        $80 - Start $8 - Down
+        $40 - Select $4 - Up
+        $20 - B $2 - Left
+        $10 - A $1 - Right
+        
+        Let's say we held down A, Start, and Up. The
+        value returned in accumulator A would be $94
+
+FF01 (SB):
+    Name - SB
+    Contents - Serial transfer data (R/W)
+        8 Bits of data to be read/written
+
+FF02 (SC):
+    Name - SC
+    Contents - SIO control (R/W
+        Bit 7 - Transfer Start Flag
+                0: Non transfer
+                1: Start transfer
+        Bit 0 - Shift Clock
+                0: External Clock (500KHz Max.)
+                1: Internal Clock (8192Hz)
+        
+        Transfer is initiated by setting the Transfer Start Flag. This bit may be read 
+        and is automatically set to 0 at the end of Transfer.
+        Transmitting and receiving serial data is done simultaneously. The received data is
+        automatically stored in SB.
+
+FF04 (DIV):
+    Name - DIV
+    Contents - Divider Register (R/W)
+        This register is incremented 16384 (~16779 on SGB) times a second. Writing 
+        any value sets it to $00.
+
+FF05(TIMA):
+    Name - TIMA
+    Contents - Timer counter (R/W)
+        This timer is incremented by a clock frequency specified by the TAC register ($FF07). 
+        The timer generates an interrupt when it overflows.
+
+FF06 (TMA):
+    Name - TMA
+    Contents - Timer Modulo (R/W)
+        When the TIMA overflows, this data will be loaded.
+
+FF07 (TAC):
+    Name - TAC
+    Contents - Timer Control (R/W)
+        Bit 2 - Timer Stop
+                0: Stop Timer
+                1: Start Timer
+        Bits 1+0 - Input Clock Select
+                00: 4.096 KHz (~4.194 KHz SGB)
+                01: 262.144 Khz (~268.4 KHz SGB)
+                10: 65.536 KHz (~67.11 KHz SGB)
+                11: 16.384 KHz (~16.78 KHz SGB)
+
+FF0F (IF):
+    Contents - Interrupt Flag (R/W)
+        Bit 4: Transition from High to Low of Pin number P10-P13
+        Bit 3: Serial I/O transfer complete
+        Bit 2: Timer Overflow
+        Bit 1: LCDC (see STAT)
+        Bit 0: V-Blank
+    The priority and jump address for the above 5
+    
+    Interrupts are:
+    Interrupt       Priority        Start Address
+    V-Blank             1           $0040
+    LCDC Status         2           $0048 - Modes 0, 1, 2 LYC=LY coincide (selectable)
+    Timer Overflow      3           $0050
+    Serial Transfer     4           $0058 - when transfer is complete
+    Hi-Lo of P10-P13    5           $0060
+ 
+    * When more than 1 interrupts occur at the same time only the interrupt with the 
+    highest priority can be acknowledged. When an interrupt is used a '0' should be 
+    stored in the IF register before the IE register is set.
+
+FF10 (NR 10):
+    Name - NR 10
+    Contents - Sound Mode 1 register,
+               Sweep register (R/W)
+        
+        Bit 6-4 - Sweep Time
+        Bit 3 -   Sweep Increase/Decrease
+                    0: Addition (frequency increases)
+                    1: Subtraction (frequency decreases)
+        Bit 2-0 - Number of sweep shift (n: 0-7)
+ 
+        Sweep Time:
+            000: sweep off - no freq change
+            001: 7.8 ms (1/128Hz)
+            010: 15.6 ms (2/128Hz)
+            011: 23.4 ms (3/128Hz)
+            100: 31.3 ms (4/128Hz)
+            101: 39.1 ms (5/128Hz)
+            110: 46.9 ms (6/128Hz)
+            111: 54.7 ms (7/128Hz)
+    The change of frequency (NR13,NR14) at each shift is calculated by the following 
+    formula where X(0) is initial freq & X(t-1) is last freq: X(t) = X(t-1) +/- X(t-1)/2^n
+
+FF11 (NR11):
+    Name - NR 11
+    Contents - Sound Mode 1 register, Sound length/Wave pattern duty (R/W)
+
+            Only Bits 7-6 can be read.
+            Bit 7-6 - Wave Pattern Duty
+            Bit 5-0 - Sound length data (t1: 0-63)
+ Wave Duty: (default: 10)
+            00: 12.5% ( _--------_--------_-------- )
+            01: 25% ( __-------__-------__------- )
+            10: 50% ( ____-----____-----____----- )
+            11: 75% ( ______---______---______--- )
+            Sound Length = (64-t1)*(1/256) seconds
+
+FF12 (NR12):
+    Name - NR 12
+    Contents - Sound Mode 1 register, Envelope (R/W)
+            Bit 7-4 - Initial volume of envelope
+            Bit 3 - Envelope UP/DOWN
+                    0: Attenuate
+                    1: Amplify
+            Bit 2-0 - Number of envelope sweep (n: 0-7) (If zero, stop envelope operation.)
+ 
+            Initial volume of envelope is from 0 to $F. Zero being no sound.
+            Length of 1 step = n*(1/64) seconds
+
+FF13 (NR13):
+    Name - NR 13
+    Contents - Sound Mode 1 register, Frequency lo (W)
+            Lower 8 bits of 11 bit frequency (x).
+            Next 3 bit are in NR 14 ($FF14)

@@ -1,0 +1,39 @@
+*****Not sure this will apply to us at all but made notes anywhere******
+
+Serial I/O:
+it is very simple, there are no start or stop bits. during a transfer, a byte is shifted in at
+the same time it is shifted out. The rate of the shift is determined by whether the clock 
+source is internal or external. If internal, the bits are shifted out at a rate of 8192Hz 
+(122 microseconds) per bit. The most significant bit is shifted in and out first.
+ 
+When the internal clock is selected, it drives the  clock pin on the game link port and it 
+stays high when not used. During a transfer it will go low eight times  to clock in/out each bit.
+
+A programmer initates a serial transfer by setting bit 7 of $FF02. This bit may be read and 
+is automatically set to 0 at the completion of transfer. After this bit is set, an interrupt 
+will then occur eight bit clocks later if the serial interrupt is enabled.
+
+    If internal clock is selected and serial interrupt is
+    enabled, this interrupt occurs 122*8 microseconds later.
+ 
+    If external clock is selected and serial interrupt is
+    enabled, an interrupt will occur eight bit clocks later.
+
+Initiating a serial transfer with external clock will wait forever if no external clock is 
+present. This allows a certain amount of synchronization with each serial port.
+
+The state of the last bit shifted out determines the state of the output line until another 
+transfer takes place.
+ 
+    If a serial transfer with internal clock is performed
+    and no external GameBoy is present, a value of $FF
+    will be received in the transfer.
+
+The following code causes $75 to be shifted out the serial port and a byte to be shifted 
+into $FF01:
+     ld a,$75
+     ld ($FF01),a
+     ld a,$81
+     ld ($FF02),a
+
+*****Not sure this will apply to us at all but made notes anywhere******

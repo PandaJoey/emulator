@@ -1,0 +1,62 @@
+Interupts:
+Interupt Procedures:
+
+The IME(Interupt Master enable) flag is reset by DI(Disable Interupts), prohibites all interupts.
+It is set by the EI(Enable interupts) and acknowledges the interupt setting by the 
+IE(Interupt Enable) register.
+
+1. When an interrupt is generated, the IF(interupts flag) flag will be set.
+2. If the IME flag is set & the corresponding IE flag is set, the following 3 steps are performed.
+3. Reset the IME flag and prevent all interrupts.
+4. The PC (program counter) is pushed onto the stack.
+5. Jump to the starting address of the interrupt.
+
+Resetting of the IF register, which was the cause of the interrupt, is done by hardware. 
+(i guess we program this in somehow)
+ 
+During the interrupt, pushing of registers to be used should be performed by the interrupt routine.
+ 
+Once the interrupt service is in progress, all the interrupts will be prohibited. However, 
+if the IME flag and the IE flag are controlled, a number of interrupt services can be made 
+possible by nesting.
+ 
+Return from an interrupt routine can be performed by either RETI or RET instruction.
+ 
+The RETI instruction enables interrupts after doing a return operation.
+ 
+If a RET is used as the final instruction in an interrupt routine, interrupts will remain disabled
+unless a EI was used in the interrupt routine or is used at a later time. The interrupt will be
+acknowledged during opcode fetch period of each instruction.
+
+Interupt Descriptions:
+****IMPORTANT*****
+The following interrupts only occur if they have been enabled in the Interrupt Enable register 
+($FFFF) and if the interrupts have actually been enabled using the EI instruction.
+
+V-Blank:
+    The V-Blank interrupt occurs ~59.7 times a second on a regular GB and ~61.1 times a
+    second on a Super GB (SGB). This interrupt occurs at the beginning of the V-Blank
+    period. During this period video hardware is not using video ram so it may be freely
+    accessed. This period lasts approximately 1.1 ms.
+
+LCDC Status:
+    There are various reasons for this interrupt to occur as described by the STAT register 
+    ($FF40). One very popular reason is to indicate to the user when the video hardware is 
+    about to redraw a given LCD line. This can be useful for dynamically controlling
+    the SCX/SCY registers ($FF43/$FF42) to perform special video effects.
+
+Timer Overflow:
+    This interrupt occurs when the TIMA register ($FF05) changes from $FF to $00.
+
+Serial Transfer completion:
+    This interrupt occurs when a serial transfer has completed on the game link port.
+
+High-to-Low of p10-p13:
+    This interrupt occurs on a transition of any of the keypad input lines from high to low. 
+    Due to the fact that keypad "bounce"* is virtually always present, software should expect 
+    this interrupt to occur one or more times for every button press and one or more
+    times for every button release.
+        * - Bounce tends to be a side effect of any button making or breaking a connection. 
+        During these periods, it is very common for a small amount of oscillation between 
+        high & low states to take place.
+*****IMPORTANT*****
